@@ -3,9 +3,9 @@ PeriodsHi: .byte 150,142,134,126,119,112,106,100,94,89,84,79,75,71,67,63,59,56,5
 
 Widths:
 DrumArpWidths:
-	.byte  0, 0, 0, 0, 8, 8, 7, 7
-	.byte  6, 6, 5, 5, 4, 4, 3, 3
-	.byte  2, 2, 1, 1, 1, 1, 1, 1
+	.byte  0, 0, 0, 0, 7, 7, 6, 6
+	.byte  5, 5, 4, 4, 3, 3, 2, 2
+	.byte  2, 2, 2, 2, 2, 2, 2, 2
 SquareWidths:
 	.byte $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
 	.byte $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
@@ -18,33 +18,33 @@ DrumBassWidths:
 
 Volumes:
 DrumArpVolume:
-	.byte 99,99,99,99,3,3,3
-	.byte 3,3,3,3,3,3,3
-	.byte 3,3,3,3,3,3,3
+	.byte 99,99,99,99,1,1,1
+	.byte 1,1,1,1,1,1,1
+	.byte 1,1,1,1,1,1,1
 
 SusVolume:
 .repeat 16
-	.byte 1
+	.byte 3
 .endrepeat
 
 BassVolume:
-	.byte  10,10,10,10,10,10,10,6,6,6,5,4,3,2
+	.byte  4,8,8,8,8,8,8,6,5,4,4,4,3,3
 
 DrumBassVolume:
-	.byte 99,99,99,99,20,20,20,6,6,6,5,4,3,2
+	.byte 99,99,99,99,8,8,8,6,5,4,4,4,3,3
 
 Pitches:
 	.byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 SnareBassPitch:
-	.byte $80 | 38, $80 | 36, $80 | 35, $80 | 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 KickBassPitch:
-	.byte $80 | 28, $80 | 22, $80 | 12, $80 | 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	.byte $80 | 35, $80 | 25, $80 | 15, $80 | 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 SnareArpMinPitches:
-	.byte $80 | 38, $80 | 36, $80 | 35, $80 | 34
+	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36
 	.byte 0, 0, 3, 3, 7, 7, 0, 0, 3, 3, 7, 7
 	.byte 0, 0, 3, 3, 7, 7, 0, 0, 3, 3, 7, 7
 SnareArpMajPitches:
-	.byte $80 | 38, $80 | 36, $80 | 35, $80 | 34
+	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
 
@@ -81,8 +81,6 @@ NotePitches:     .byte 15, 0,15,15,27, 0, 0,15, 0,15,15, 0,27, 0,15, 0,18, 0,18,
 TEST_SONG_LENGTH = NotePitches - NoteInstruments
 
 SR_UpdateTestSong:
-	rts
-
 	dec song_counter
 	bpl @EndSongUpdate
 
@@ -117,12 +115,12 @@ SR_UpdateTestSong:
 
 	ldx song_volume_idx
 	lda Volumes, x
-	;sta dmc_volume
+	sta dmc_volume
 	inc song_volume_idx
 	
 	ldx song_width_idx
 	lda Widths, x
-	;sta dmc_width
+	sta dmc_width
 	inc song_width_idx
 
 	ldx song_pitch_idx
@@ -134,9 +132,9 @@ SR_UpdateTestSong:
 	and #$7f
 	tay
 	lda PeriodsLo, y
-	;sta dmc_period_lo
+	sta dmc_period_lo
 	lda PeriodsHi, y
-	;sta dmc_period_hi
+	sta dmc_period_hi
 
 	inc song_pitch_idx
 

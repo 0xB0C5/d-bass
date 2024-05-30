@@ -21,13 +21,19 @@ ppu_text_addr: .res 2
 frame_counter: .res 1
 cpu_counter: .res 2
 
-dmc_counters_lo: .res 2
-dmc_counters_hi: .res 2
+irq_counter_lo: .res 1
+irq_counter_hi: .res 1
 
-dmc_periods_lo: .res 2
-dmc_periods_hi: .res 2
+irq_durations: .res 4
 
-dmc_volumes: .res 2
+irq_next1: .res 1
+irq_idx: .res 1
+
+dmc_period_lo: .res 2
+dmc_period_hi: .res 2
+
+dmc_volume: .res 1
+dmc_width: .res 1
 
 dmc_output: .res 1
 

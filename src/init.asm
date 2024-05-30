@@ -83,17 +83,16 @@ ClearMem:
 	lda #$10
 	sta $4015
 
-	lda #12
-	sta dmc_periods_hi+0
-	lda #10
-	sta dmc_periods_hi+1
+	lda #1
+	sta irq_counter_hi
+
+	lda #14
+	sta dmc_period_hi
 	lda #0
-	sta dmc_periods_lo+0
-	lda #0
-	sta dmc_periods_lo+1
-	lda #3
-	sta dmc_volumes+0
-	sta dmc_volumes+1
+	sta dmc_period_lo
+	lda #1
+	sta dmc_volume
+	sta dmc_width
 	
 	jsr SR_EnablePPU
 

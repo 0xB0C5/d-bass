@@ -4,39 +4,63 @@
 IRQ:
 	pha
 
-	; Output:
-	; 	If non-zero, output sample address 1 and decrement dmc_output
-	lda dmc_output
-	beq :+
-	lda #1
-	dec dmc_output
-:
-	sta $4012
-
 	lda #$10
 	sta $4015
 
-	; Pseudochannels:
-.repeat 2, I
-	; Decrement counter.
-	; When it hits 0, add period to counter, and add volume to output.
-	dec dmc_counters_hi+I
-	bne :+
-	lda dmc_counters_lo+I
-	clc
-	adc dmc_periods_lo+I
-	sta dmc_counters_lo+I
-	
-	lda dmc_periods_hi+I
-	adc #0
-	sta dmc_counters_hi+I
+	dec irq_counter_hi
 
-	lda dmc_volumes+I
-	cmp dmc_output
-	bcc :+
-	sta dmc_output
-:
-.endrepeat
+	bne @End
+
+	clc
+	lda irq_idx
+	and #1
+	sta $4012
+	lda irq_idx
+	beq @Idx0
+	cmp #1
+	beq @Idx1
+	cmp #2
+	beq @Idx2
+	
+	lda irq_durations+3
+	sta irq_counter_hi
+	
+	lda #0
+	sta irq_idx
+	
+@End:
+	pla
+	rti
+
+@Idx2:
+	lda irq_durations+2
+	sta irq_counter_hi
+
+	lda #3
+	sta irq_idx
+
+	pla
+	rti
+@Idx1:
+	lda irq_durations+1
+	sta irq_counter_hi
+	
+	lda irq_next1
+	sta irq_idx
+
+	pla
+	rti
+@Idx0:
+	lda irq_counter_lo
+	adc dmc_period_lo
+	sta irq_counter_lo
+
+	lda #0
+	adc irq_durations+0
+	sta irq_counter_hi
+
+	lda #1
+	sta irq_idx
 
 	pla
 	rti
