@@ -1,14 +1,14 @@
 
-.byte %00000000
-
-.repeat 63
-	.byte 0
+.repeat 64
+	.byte $00
 .endrepeat
 
-.byte %11111111
-
-.repeat 63
-	.byte %01010101
+.repeat 64
+	.byte $ff
 .endrepeat
 
-.byte %01010101
+.repeat 64
+	.byte $0f
+.endrepeat
+
+.byte $f0

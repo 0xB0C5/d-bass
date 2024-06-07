@@ -37,6 +37,9 @@ dmc_width: .res 1
 
 dmc_output: .res 1
 
+user_irq: .res 2
+irq_user_counter: .res 1
+
 song_index: .res 1
 song_counter: .res 1
 song_volume_idx: .res 1

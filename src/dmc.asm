@@ -9,7 +9,7 @@ SR_UpdateDmc:
 
 	sta irq_durations+1
 
-	lda dmc_width
+	lda #0 ; dmc_width
 	sta irq_durations+2
 
 	; volume can be at most half the period minus 1

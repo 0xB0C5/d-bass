@@ -18,9 +18,9 @@ DrumBassWidths:
 
 Volumes:
 DrumArpVolume:
-	.byte 99,99,99,99,1,1,1
-	.byte 1,1,1,1,1,1,1
-	.byte 1,1,1,1,1,1,1
+	.byte 99,99,99,99,3,3,3
+	.byte 3,3,3,3,3,3,3
+	.byte 3,3,3,3,3,3,3
 
 SusVolume:
 .repeat 16
@@ -36,15 +36,15 @@ DrumBassVolume:
 Pitches:
 	.byte 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 SnareBassPitch:
-	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	.byte $80 | 36, $80 | 35, $80 | 34, $80 | 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 KickBassPitch:
 	.byte $80 | 35, $80 | 25, $80 | 15, $80 | 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 SnareArpMinPitches:
-	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36
+	.byte $80 | 36, $80 | 35, $80 | 34, $80 | 33
 	.byte 0, 0, 3, 3, 7, 7, 0, 0, 3, 3, 7, 7
 	.byte 0, 0, 3, 3, 7, 7, 0, 0, 3, 3, 7, 7
 SnareArpMajPitches:
-	.byte $80 | 40, $80 | 38, $80 | 37, $80 | 36
+	.byte $80 | 36, $80 | 35, $80 | 34, $80 | 33
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
 
@@ -130,6 +130,8 @@ SR_UpdateTestSong:
 	adc song_pitch
 :
 	and #$7f
+	clc
+	adc #5
 	tay
 	lda PeriodsLo, y
 	sta dmc_period_lo

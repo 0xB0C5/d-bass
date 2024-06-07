@@ -1,7 +1,7 @@
 
 .segment "CODE"
 
-IRQ:
+IRQ_M:
 	pha
 
 	lda #$10
@@ -65,3 +65,76 @@ IRQ:
 	pla
 	rti
 
+
+
+IRQ:
+	pha
+
+	dec irq_user_counter
+	beq _UserIrq
+IRQ_Continue:
+	dec irq_counter_hi
+
+	beq :+
+	lda irq_idx
+	sta $4012
+
+	lda #$10
+	sta $4015
+
+	pla
+	rti
+:
+
+	lda irq_idx
+	bne @Idx1
+
+	lda irq_durations+1
+	sta irq_counter_hi
+	
+	lda #1
+	sta irq_idx
+
+	bit irq_counter_lo
+	bpl :+
+	ora #2
+:
+	sta $4012
+	lda #$10
+	sta $4015
+
+	pla
+	rti
+
+@Idx1:
+
+	lda #0
+	sta irq_idx
+
+	bit irq_counter_lo
+	bpl :+
+	ora #2
+:
+
+	sta $4012
+	lda #$10
+	sta $4015
+
+	clc
+	lda irq_counter_lo
+	adc dmc_period_lo
+	sta irq_counter_lo
+
+	lda #0
+	adc irq_durations+0
+	sta irq_counter_hi
+
+	pla
+	rti
+
+_UserIrq:
+	jmp (user_irq)
+
+
+UserIRQ:
+	jmp IRQ_Continue

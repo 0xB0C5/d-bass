@@ -77,7 +77,7 @@ ClearMem:
 	sta $4013
 	sta $4012
 
-	lda #%10001111
+	lda #$8e
 	sta $4010
 
 	lda #$10
@@ -93,6 +93,11 @@ ClearMem:
 	lda #1
 	sta dmc_volume
 	sta dmc_width
+	
+	lda #<UserIRQ
+	sta user_irq
+	lda #>UserIRQ
+	sta user_irq+1
 	
 	jsr SR_EnablePPU
 
