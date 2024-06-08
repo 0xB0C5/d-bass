@@ -1,7 +1,7 @@
 NMI:
 	pha
 	lda #>sprites
-    sta OAMDMA
+    ;sta OAMDMA
 	inc nmi_done
 	pla
 	rti
@@ -70,7 +70,7 @@ _RenderImmediately:
 	sta PPUSCROLL
 	lda ppu_pending_control
     sta PPUCTRL
-    lda #%00011110
+    lda pending_ppu_mask
     sta PPUMASK
 
 	rts
@@ -90,7 +90,7 @@ SR_EnablePPU:
     sta PPUCTRL
 	sta ppu_pending_control
 
-    lda #%00011110
+    lda pending_ppu_mask
     sta PPUMASK
 
 	rts

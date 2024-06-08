@@ -93,11 +93,20 @@ ClearMem:
 	lda #1
 	sta dmc_volume
 	sta dmc_width
-	
+
 	lda #<UserIRQ
 	sta user_irq
 	lda #>UserIRQ
 	sta user_irq+1
+	
+	lda #$d8
+	sta irq_user_counter
+	
+	lda #2
+	sta sync_ticks
+	
+	lda #%00011110
+	sta pending_ppu_mask
 	
 	jsr SR_EnablePPU
 

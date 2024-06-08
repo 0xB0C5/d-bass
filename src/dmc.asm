@@ -1,7 +1,32 @@
 
 
 SR_UpdateDmc:
+	lda pending_ppu_mask
+	and #$fe
+	sta pending_ppu_mask
+
 	sei
+	
+	lda sync_ticks_lo
+	clc
+	adc #144
+	sta sync_ticks_lo
+
+	; Add 50+carry to sync ticks, modulo 72,
+	; storing whether we wrapped around in the carry.
+	lda sync_ticks
+	adc #50
+	cmp #72
+	bcc :+
+	sbc #72
+:
+	sta sync_ticks
+
+	; Add 51 + carry
+	lda irq_user_counter
+	adc #51
+	sta irq_user_counter
+
 	lda dmc_volume
 	bne :+
 	rts

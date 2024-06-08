@@ -67,6 +67,9 @@ IRQ_M:
 
 
 
+_UserIrq:
+	jmp (user_irq)
+
 IRQ:
 	pha
 
@@ -132,9 +135,19 @@ IRQ_Continue:
 	pla
 	rti
 
-_UserIrq:
-	jmp (user_irq)
-
 
 UserIRQ:
+	; Delay by 8*(sync_ticks) cpu cycles.
+	lda sync_ticks ; carry is set - sync is never above 71
+	sec
+@DelayLoop:
+	bit $00        ; 3
+	sbc #1         ; 2
+	bcs @DelayLoop ; 3
+
+	lda pending_ppu_mask
+	sta PPUMASK
+	eor #1
+	sta pending_ppu_mask
+
 	jmp IRQ_Continue
