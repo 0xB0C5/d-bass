@@ -2,30 +2,85 @@
 
 SR_UpdateDmc:
 	lda pending_ppu_mask
-	and #$fe
+	and #%11011110
 	sta pending_ppu_mask
 
-	sei
+	; Uhhh this doesn't go here.
+	dec user_time_ticks
+	bpl @EndUserTimeUpdate
+	lda #71
+	sta user_time_ticks
+	ldx user_time_irqs
+	dex
+	cpx #10
+	bcs :+
+	ldx #40
+:
+	stx user_time_irqs
+
+@EndUserTimeUpdate:
 	
-	lda sync_ticks_lo
-	clc
-	adc #144
+	sei
+
+	; Update sync based on expected_nmi_user_counter
+	lda nmi_user_counter
+	cmp expected_nmi_user_counter
+	bpl @EndSyncUpdate
+
+	lda #0
+	sta sync_ticks
 	sta sync_ticks_lo
 
-	; Add 50+carry to sync ticks, modulo 72,
-	; storing whether we wrapped around in the carry.
+	lda pending_ppu_mask
+	ora #%00100000
+	sta pending_ppu_mask
+
+@EndSyncUpdate:
+
+	; Compute expected_nmi_user_counter:
+	;   expected_nmi_user_counter = user_time_irqs - frame_time_irqs
+	lda user_time_irqs
+	sec
+	sbc #51 ; Whole IRQs per frame
+	sta expected_nmi_user_counter
+
+	; Compute irq_user_counter:
+	;   irqs_so_far = nmi_user_counter - irq_user_counter
+	;   irq_user_counter = user_time_irqs - irqs_so_far
+	;         = user_time_irqs + irq_user_counter - nmi_user_counter
+	lda user_time_irqs
+	clc
+	adc irq_user_counter
+	sec
+	sbc nmi_user_counter
+	sta irq_user_counter
+
+	lda sync_ticks
+	clc
+	adc user_time_ticks
+	cmp #72
+	bcc :+
+	sbc #72
+	inc irq_user_counter
+	inc expected_nmi_user_counter
+:
+	sta user_sync_ticks
+
+	; Update sync to next frame.
+	lda sync_ticks_lo
+	clc
+	adc #143 ; Very slightly underestimate sync change, because we only correct in one direction.
+	sta sync_ticks_lo
+	
 	lda sync_ticks
 	adc #50
 	cmp #72
 	bcc :+
 	sbc #72
+	; If the sync wraps, there is 1 extra IRQ that frame.
+	dec expected_nmi_user_counter
 :
 	sta sync_ticks
-
-	; Add 51 + carry
-	lda irq_user_counter
-	adc #51
-	sta irq_user_counter
 
 	lda dmc_volume
 	bne :+

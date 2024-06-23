@@ -1,7 +1,9 @@
 NMI:
 	pha
+	lda irq_user_counter
+	sta nmi_user_counter
 	lda #>sprites
-    ;sta OAMDMA
+    sta OAMDMA
 	inc nmi_done
 	pla
 	rti

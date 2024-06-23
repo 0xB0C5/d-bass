@@ -29,6 +29,8 @@ irq_durations: .res 4
 irq_next1: .res 1
 irq_idx: .res 1
 
+irq_pending_sample: .res 1
+
 dmc_period_lo: .res 2
 dmc_period_hi: .res 2
 
@@ -39,11 +41,18 @@ dmc_output: .res 1
 
 user_irq: .res 2
 irq_user_counter: .res 1
+nmi_user_counter: .res 1
+
+expected_nmi_user_counter: .res 1
 
 pending_ppu_mask: .res 1
 
-sync_ticks_lo: .res 1
 sync_ticks: .res 1
+sync_ticks_lo: .res 1
+user_sync_ticks: .res 1
+
+user_time_irqs: .res 1
+user_time_ticks: .res 1
 
 song_index: .res 1
 song_counter: .res 1

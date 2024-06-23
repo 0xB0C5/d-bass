@@ -73,18 +73,22 @@ _UserIrq:
 IRQ:
 	pha
 
+	lda irq_pending_sample
+	sta $4012
+
+	lda #$10
+	sta $4015
+
 	dec irq_user_counter
 	beq _UserIrq
 IRQ_Continue:
 	dec irq_counter_hi
 
 	beq :+
+	
 	lda irq_idx
-	sta $4012
-
-	lda #$10
-	sta $4015
-
+	sta irq_pending_sample
+	
 	pla
 	rti
 :
@@ -102,9 +106,7 @@ IRQ_Continue:
 	bpl :+
 	ora #2
 :
-	sta $4012
-	lda #$10
-	sta $4015
+	sta irq_pending_sample
 
 	pla
 	rti
@@ -119,9 +121,7 @@ IRQ_Continue:
 	ora #2
 :
 
-	sta $4012
-	lda #$10
-	sta $4015
+	sta irq_pending_sample
 
 	clc
 	lda irq_counter_lo
@@ -135,10 +135,9 @@ IRQ_Continue:
 	pla
 	rti
 
-
 UserIRQ:
-	; Delay by 8*(sync_ticks) cpu cycles.
-	lda sync_ticks ; carry is set - sync is never above 71
+	; Delay by 8*(user_sync_ticks) cpu cycles.
+	lda user_sync_ticks ; carry is set - sync is never above 71
 	sec
 @DelayLoop:
 	bit $00        ; 3
