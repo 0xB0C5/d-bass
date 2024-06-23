@@ -13,7 +13,6 @@ SR_RenderImmediately:
 	sta nmi_done
 	jmp _RenderImmediately
 
-
 SR_AdvanceFrame:
 	; Wait for NMI thread to increment nmi_done.
 	lda #0

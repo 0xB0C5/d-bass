@@ -53,6 +53,9 @@ user_sync_ticks: .res 1
 
 user_time_irqs: .res 1
 user_time_ticks: .res 1
+user_time_ticks_lo: .res 1
+
+raster_direction: .res 1
 
 song_index: .res 1
 song_counter: .res 1

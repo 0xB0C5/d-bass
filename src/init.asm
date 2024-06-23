@@ -112,6 +112,7 @@ ClearMem:
 @Forever:
 	jsr SR_UpdateTestSong
 	jsr SR_UpdateDmc
+	jsr SR_UpdateRasterFX
 
 	ldx #0
 @MessageLoop:

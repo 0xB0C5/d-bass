@@ -3,29 +3,25 @@
 ##################
 
 Sync:
-	The IRQ sync is the amount of time from NMI until an IRQ triggers.
+	The IRQ sync is the amount of time from the last IRQ before NMI until NMI.
 	It is measured in ticks of 8 cpu cycles.
-	At rate $e, one IRQ is about 72 ticks, and there are approx 51 + 180/256 IRQs per frame.
-	This lets us predict the next sync from the current.
-	
+
 	User IRQ time is represented as a pair (IRQs, ticks) where ticks is under 72.
 
 IRQ:
 	decrement irq_user_counter
-	if it hits 0, jmp (user_irq)
-	user IRQ must end with jmp DBass_ContinueIRQ
+	if it hits 0, wait some number of ticks and call user IRQ.
 
 NMI:
-	Save old irq_user_counter
-	Set new irq_user_counter
+	Save irq_user_counter to nmi_user_counter
 
 Once per frame:
-	- Use saved old irq_user_counter to update sync.
-	- Use sync to compute next irq counter offset (which NMI will use to compute irq_user_counter)
+	- Check if nmi_user_counter matched the sync, and update sync if needed.
+	- Use sync to compute what the next nmi_user_counter should be.
 
 Startup:
 	- Estimate sync when enabling PPU (optional)
-		- Wait for VBlank via status
+		- Wait for VBlank via status (so we don't need extra code in NMI)
 		- Measure time until IRQ counter changes
 	- Otherwise, you can just estimate it's half an IRQ (36 ticks) and let the sync update handle it.
 

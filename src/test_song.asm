@@ -20,7 +20,7 @@ Volumes:
 DrumArpVolume:
 	.byte 99,99,99,99,3,3,3
 	.byte 3,3,3,3,3,3,3
-	.byte 3,3,3,3,3,3,3
+	.byte 3,3,3,3,0,0,0
 
 SusVolume:
 .repeat 16

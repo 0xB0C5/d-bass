@@ -1,0 +1,16 @@
+IRQ: 3107.25 Hz
+CPU: 1789773 Hz
+tick: 1/8 of CPU
+
+CPUs per IRQ: Exactly 576
+ticks per IRQ: Exactly 72
+
+CPUs per frame: 29780.5
+
+ticks per frame: 3722.5625
+IRQs per frame: 51.70225694
+
+frame: 51 IRQs + (50 + 144/256) ticks
+
+Ticks per scanline: 14.2083
+	~= 14 + 53/256

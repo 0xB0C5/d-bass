@@ -1,31 +1,12 @@
 
 
 SR_UpdateDmc:
-	lda pending_ppu_mask
-	and #%11011110
-	sta pending_ppu_mask
-
-	; Uhhh this doesn't go here.
-	dec user_time_ticks
-	bpl @EndUserTimeUpdate
-	lda #71
-	sta user_time_ticks
-	ldx user_time_irqs
-	dex
-	cpx #10
-	bcs :+
-	ldx #40
-:
-	stx user_time_irqs
-
-@EndUserTimeUpdate:
-	
 	sei
 
 	; Update sync based on expected_nmi_user_counter
 	lda nmi_user_counter
 	cmp expected_nmi_user_counter
-	bpl @EndSyncUpdate
+	beq @EndSyncUpdate
 
 	lda #0
 	sta sync_ticks
@@ -84,9 +65,15 @@ SR_UpdateDmc:
 
 	lda dmc_volume
 	bne :+
+	; Silence: clear irq_idx so the samples we write are 0s.
+	; set irq counter so no updates will occur this frame.
+	sta irq_idx
+	lda #52
+	sta irq_counter_hi
+
+	cli
 	rts
 :
-
 	sta irq_durations+1
 
 	lda #0 ; dmc_width
