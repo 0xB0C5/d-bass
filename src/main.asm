@@ -23,6 +23,7 @@
 
 ;.include "joy.asm"
 .include "raster.asm"
+.include "sprites.asm"
 .include "nmi.asm"
 .include "irq.asm"
 .include "init.asm"

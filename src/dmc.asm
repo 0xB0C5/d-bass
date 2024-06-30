@@ -68,7 +68,8 @@ SR_UpdateDmc:
 	; Silence: clear irq_idx so the samples we write are 0s.
 	; set irq counter so no updates will occur this frame.
 	sta irq_idx
-	lda #52
+	; TODO : a more forgiving way of doing this?
+	lda #60 ; Give a little extra time of silence in case this subroutine isn't called at the same time each frame.
 	sta irq_counter_hi
 
 	cli

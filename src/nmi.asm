@@ -8,11 +8,6 @@ NMI:
 	pla
 	rti
 
-SR_RenderImmediately:
-	lda #0
-	sta nmi_done
-	jmp _RenderImmediately
-
 SR_AdvanceFrame:
 	; Wait for NMI thread to increment nmi_done.
 	lda #0
@@ -29,7 +24,6 @@ SR_AdvanceFrame:
 	stx cpu_counter+0
 	sta cpu_counter+1
 
-_RenderImmediately:
 	tsx
 	stx nmi_temp
 

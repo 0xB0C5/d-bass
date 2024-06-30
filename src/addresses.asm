@@ -39,7 +39,9 @@ dmc_width: .res 1
 
 dmc_output: .res 1
 
+; TODO : Separate into multiple user IRQs?
 user_irq: .res 2
+
 irq_user_counter: .res 1
 nmi_user_counter: .res 1
 
@@ -49,6 +51,7 @@ pending_ppu_mask: .res 1
 
 sync_ticks: .res 1
 sync_ticks_lo: .res 1
+
 user_sync_ticks: .res 1
 
 user_time_irqs: .res 1

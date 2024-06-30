@@ -76,7 +76,7 @@ IRQ:
 	lda irq_pending_sample
 	sta $4012
 
-	lda #$10
+	lda #$1f
 	sta $4015
 
 	dec irq_user_counter

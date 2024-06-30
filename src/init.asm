@@ -39,6 +39,55 @@ ClearMem:
     inx
     bne ClearMem
 
+	bit PPUSTATUS
+	lda #$20
+	sta PPUADDR
+	lda #$00
+	sta PPUADDR
+	
+	ldy #4
+
+@ClearNametableLoopOuter:
+	ldx #0
+@ClearNametableLoopInner:
+	sta PPUDATA
+	dex
+	bne @ClearNametableLoopInner
+	
+	dey
+	bne @ClearNametableLoopOuter
+
+	; Background.
+	ldy #$21
+	ldx #$84
+	lda #$80
+	jsr SR_DrawBigLetter
+
+	ldy #$21
+	ldx #$88
+	lda #$84
+	jsr SR_DrawBigLetter
+	
+	ldy #$21
+	ldx #$8c
+	lda #$88
+	jsr SR_DrawBigLetter
+	
+	ldy #$21
+	ldx #$90
+	lda #$8c
+	jsr SR_DrawBigLetter
+	
+	ldy #$21
+	ldx #$94
+	lda #$c0
+	jsr SR_DrawBigLetter
+	
+	ldy #$21
+	ldx #$98
+	lda #$c0
+	jsr SR_DrawBigLetter
+
 	; Test palette
 	bit PPUSTATUS
 	lda #>PPU_PALETTE
@@ -64,9 +113,9 @@ ClearMem:
 	lda #%00010000
 	sta ppu_pending_control
 
-	lda #$20
+	lda #$23
 	sta ppu_text_addr+1
-	lda #$80
+	lda #$01
 	sta ppu_text_addr+0
 
 	lda #$00
@@ -107,12 +156,15 @@ ClearMem:
 	lda #%00011110
 	sta pending_ppu_mask
 	
+	jsr SR_InitSprites
+	
 	jsr SR_EnablePPU
 
 @Forever:
 	jsr SR_UpdateTestSong
 	jsr SR_UpdateDmc
 	jsr SR_UpdateRasterFX
+	jsr SR_UpdateSprites
 
 	ldx #0
 @MessageLoop:
@@ -156,12 +208,102 @@ ClearMem:
 
 	jmp @Forever
 
+; Call with a = letter, x::y = PPU address
+SR_DrawBigLetter:
+	sta temp+0
+	stx temp+1
+
+	; First row.
+	bit PPUSTATUS
+	sty PPUADDR
+	stx PPUADDR
+
+	tax
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	
+	; 2nd row
+	lda temp+1
+	clc
+	adc #32
+	bcc :+
+	iny
+:
+	bit PPUSTATUS
+	sty PPUADDR
+	sta PPUADDR
+	
+	lda temp+0
+	clc
+	adc #16
+	tax
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	
+	; 3rd row
+	lda temp+1
+	clc
+	adc #64
+	bcc :+
+	iny
+:
+	bit PPUSTATUS
+	sty PPUADDR
+	sta PPUADDR
+	
+	lda temp+0
+	clc
+	adc #32
+	tax
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	
+	; 4th row
+	lda temp+1
+	clc
+	adc #96
+	bcc :+
+	iny
+:
+	bit PPUSTATUS
+	sty PPUADDR
+	sta PPUADDR
+	
+	lda temp+0
+	clc
+	adc #48
+	tax
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	inx
+	stx PPUDATA
+	
+	rts
+
 TestMessage:
-	.byte "Idle:"
+	.byte "Idle:", 0
 
 
 TestPalette:
-	.byte $0f, $00, $10, $20
-	.byte $0f, $01, $11, $21
+	.byte $0c, $0f, $2c, $30
+	.byte $0f, $0f, $11, $21
 	.byte $0f, $05, $15, $25
 	.byte $0f, $09, $19, $29
