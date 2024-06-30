@@ -39,7 +39,6 @@ dmc_width: .res 1
 
 dmc_output: .res 1
 
-; TODO : Separate into multiple user IRQs?
 user_irq: .res 2
 
 irq_user_counter: .res 1
@@ -52,11 +51,17 @@ pending_ppu_mask: .res 1
 sync_ticks: .res 1
 sync_ticks_lo: .res 1
 
-user_sync_ticks: .res 1
+user_syncs_ticks: .res MAX_USER_IRQ_COUNT
 
-user_time_irqs: .res 1
-user_time_ticks: .res 1
-user_time_ticks_lo: .res 1
+user_times_irqs: .res MAX_USER_IRQ_COUNT
+user_times_ticks: .res MAX_USER_IRQ_COUNT
+
+user_irq_counters: .res MAX_USER_IRQ_COUNT
+
+user_irq_index: .res 1
+
+
+raster_lines: .res MAX_USER_IRQ_COUNT
 
 raster_direction: .res 1
 

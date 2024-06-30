@@ -136,8 +136,17 @@ IRQ_Continue:
 	rti
 
 UserIRQ:
+	tya
+	pha
+
+	ldy user_irq_index
+	
+	; Update counter for next user IRQ
+	lda user_irq_counters, y
+	sta irq_user_counter
+
 	; Delay by 8*(user_sync_ticks) cpu cycles.
-	lda user_sync_ticks ; carry is set - sync is never above 71
+	lda user_syncs_ticks, y ; carry is set - sync is never above 71
 	sec
 @DelayLoop:
 	bit $00        ; 3
@@ -148,5 +157,9 @@ UserIRQ:
 	sta PPUMASK
 	eor #1
 	sta pending_ppu_mask
+
+	pla
+	tay
+	inc user_irq_index
 
 	jmp IRQ_Continue

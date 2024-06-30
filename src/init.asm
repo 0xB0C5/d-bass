@@ -148,11 +148,9 @@ ClearMem:
 	lda #>UserIRQ
 	sta user_irq+1
 	
-	lda #16
-	sta user_time_irqs
-	lda #9
-	sta user_time_ticks
-	
+	lda #0
+	sta raster_lines+0
+
 	lda #%00011110
 	sta pending_ppu_mask
 	
@@ -176,16 +174,8 @@ ClearMem:
 @EndMessage:
 
 	lda cpu_counter+1
-	lsr
-	lsr
-	lsr
-	lsr
 	ora #$10
-	sta ppu_pending_text, x
-	lda cpu_counter+1
-	and #$0f
-	ora #$10
-	sta ppu_pending_text+1, x
+	sta ppu_pending_text+0, x
 
 	lda cpu_counter+0
 	lsr
@@ -193,10 +183,13 @@ ClearMem:
 	lsr
 	lsr
 	ora #$10
-	sta ppu_pending_text+2, x
+	sta ppu_pending_text+1, x
 	lda cpu_counter+0
 	and #$0f
 	ora #$10
+	sta ppu_pending_text+2, x
+
+	lda #'0'
 	sta ppu_pending_text+3, x
 
 	lda #0

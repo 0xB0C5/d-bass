@@ -15,11 +15,14 @@ SR_AdvanceFrame:
 	sta nmi_done
 	clc
 @WaitForVBlank:
-	cpx #$ff            ; 2  2
-	inx                 ; 2  4
-	adc #0              ; 2  6
-	ldy nmi_done        ; 3  9
-	beq @WaitForVBlank  ; 3 12
+	cpx #$ff              ; 2  2
+	inx                   ; 2  4
+	adc #0                ; 2  6
+	nop                   ; 2  8
+	nop                   ; 2 10
+	ldy nmi_done          ; 3 13
+	beq @WaitForVBlank    ; 3 16
+@EndWaitForVBlank:
 
 	stx cpu_counter+0
 	sta cpu_counter+1

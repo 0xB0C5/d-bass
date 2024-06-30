@@ -1,7 +1,8 @@
 
 
 SR_UpdateDmc:
-	sei
+	lda #0
+	sta user_irq_index
 
 	; Update sync based on expected_nmi_user_counter
 	lda nmi_user_counter
@@ -12,15 +13,33 @@ SR_UpdateDmc:
 	sta sync_ticks
 	sta sync_ticks_lo
 
-	lda pending_ppu_mask
-	ora #%00100000
-	sta pending_ppu_mask
-
 @EndSyncUpdate:
 
+	; TODO : figure out best way to handle sei/cli
+	sei
+
+	; Compute user times.
+	; Store in user_irq_counters.
+	ldx #MAX_USER_IRQ_COUNT-1
+@UserTimeLoop:
+	lda user_times_ticks, x
+	clc
+	adc sync_ticks
+	cmp #72
+	bcc :+
+	sbc #72
+:
+	sta user_syncs_ticks, x
+
+	lda user_times_irqs, x
+	adc #0
+	sta user_irq_counters, x
+	dex
+	bpl @UserTimeLoop
+
 	; Compute expected_nmi_user_counter:
-	;   expected_nmi_user_counter = user_time_irqs - frame_time_irqs
-	lda user_time_irqs
+	;   expected_nmi_user_counter = user_time_irqs[-1] - frame_time_irqs
+	lda user_irq_counters+MAX_USER_IRQ_COUNT-1
 	sec
 	sbc #51 ; Whole IRQs per frame
 	sta expected_nmi_user_counter
@@ -29,23 +48,28 @@ SR_UpdateDmc:
 	;   irqs_so_far = nmi_user_counter - irq_user_counter
 	;   irq_user_counter = user_time_irqs - irqs_so_far
 	;         = user_time_irqs + irq_user_counter - nmi_user_counter
-	lda user_time_irqs
+	lda user_irq_counters+0
 	clc
 	adc irq_user_counter
 	sec
 	sbc nmi_user_counter
 	sta irq_user_counter
 
-	lda sync_ticks
-	clc
-	adc user_time_ticks
-	cmp #72
-	bcc :+
-	sbc #72
-	inc irq_user_counter
-	inc expected_nmi_user_counter
-:
-	sta user_sync_ticks
+	; Update user_irq_counters to be relative.
+	ldx #0 ; inx?
+@UserIrqCountersLoop:
+	
+	lda user_irq_counters+1, x
+	sec
+	sbc user_irq_counters, x
+	sta user_irq_counters, x
+	
+	inx
+	cpx #MAX_USER_IRQ_COUNT-1
+	bcc @UserIrqCountersLoop
+	
+	lda #0
+	sta user_irq_counters+MAX_USER_IRQ_COUNT-1
 
 	; Update sync to next frame.
 	lda sync_ticks_lo
@@ -62,6 +86,12 @@ SR_UpdateDmc:
 	dec expected_nmi_user_counter
 :
 	sta sync_ticks
+
+	; TODO : figure out sei/cli
+
+	cli
+	nop
+	sei
 
 	lda dmc_volume
 	bne :+
