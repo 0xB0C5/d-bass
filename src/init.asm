@@ -148,13 +148,11 @@ ClearMem:
 	lda #>UserIRQ
 	sta user_irq+1
 	
-	lda #0
-	sta raster_lines+0
-
 	lda #%00011110
 	sta pending_ppu_mask
 	
 	jsr SR_InitSprites
+	jsr SR_InitRasterFX
 	
 	jsr SR_EnablePPU
 
@@ -189,7 +187,7 @@ ClearMem:
 	ora #$10
 	sta ppu_pending_text+2, x
 
-	lda #'0'
+	lda #$10
 	sta ppu_pending_text+3, x
 
 	lda #0

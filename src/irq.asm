@@ -154,8 +154,8 @@ UserIRQ:
 	bcs @DelayLoop ; 3
 
 	lda pending_ppu_mask
+	eor #%00100001
 	sta PPUMASK
-	eor #1
 	sta pending_ppu_mask
 
 	pla

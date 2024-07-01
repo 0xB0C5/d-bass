@@ -5,7 +5,7 @@ TICKS_PER_IRQ = 72
 LINE_COUNT = 224
 
 ; TODO : make this actually match the start line!
-START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 1000) + 10*SUBTICKS_PER_LINE
+START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 1000)
 
 LineIrqs:
 .repeat LINE_COUNT, I
@@ -18,43 +18,60 @@ LineTicks:
 .endrepeat
 
 
-SR_UpdateRasterFX:
-	lda pending_ppu_mask
-	and #%11011110
-	sta pending_ppu_mask
+Wave:
+	.byte 11, 12, 13, 14, 14, 15, 16, 16, 17, 17, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21
+	.byte 21, 21, 21, 21, 20, 20, 20, 20, 20, 19, 19, 19, 19, 18, 18, 18, 17, 17, 16, 16, 15, 14, 14, 13, 12, 11
+	.byte 10,  9,  8,  7,  7,  6,  5,  5,  4,  4,  3,  3,  3,  2,  2,  2,  2,  1,  1,  1,  1,  1,  0,  0,  0,  0
+	.byte  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  4,  4,  5,  5,  6,  7,  7,  8,  9, 10
 
-	lda raster_direction
-	bne @RasterDecrement
-	
-	inc raster_lines+0
-	bpl @EndLine0
-	inc raster_direction
-	jmp @EndLine0
-@RasterDecrement:
-	dec raster_lines+0
-	bne @EndLine0
-	dec raster_direction
-@EndLine0:
+WAVE_LEN = 4*26
 
-	lda raster_lines+0
-	ldx #1
-@FillLoop:
+OffsetsY:
+	.byte 19, 48+19, 96+19, 144+19
+
+SR_InitRasterFX:
+	lda #0
+	tax
+@Loop:
+	sta raster_wave_indices, x
 	clc
-	adc #16
-	sta raster_lines, x
+	adc #13
 	inx
 	cpx #MAX_USER_IRQ_COUNT
-	bne @FillLoop
+	bne @Loop
+	rts
+
+SR_UpdateRasterFX:
+	lda pending_ppu_mask
+	and #%01011110
+	sta pending_ppu_mask
 
 	ldx #MAX_USER_IRQ_COUNT-1
-@Line2TimeLoop:
-	ldy raster_lines, x
+	
+@Loop:
+
+	ldy raster_wave_indices, x
+	iny
+	cpy #WAVE_LEN
+	bne :+
+	ldy #0
+:
+	sty raster_wave_indices, x
+
+	lda Wave, y
+	asl
+	
+	clc
+	adc OffsetsY, x
+	
+	tay
 	lda LineIrqs, y
 	sta user_times_irqs, x
 	lda LineTicks, y
 	sta user_times_ticks, x
+	
 	dex
-	bpl @Line2TimeLoop
+	bpl @Loop
 
 	rts
 

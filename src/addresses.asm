@@ -61,7 +61,7 @@ user_irq_counters: .res MAX_USER_IRQ_COUNT
 user_irq_index: .res 1
 
 
-raster_lines: .res MAX_USER_IRQ_COUNT
+raster_wave_indices: .res MAX_USER_IRQ_COUNT
 
 raster_direction: .res 1
 
