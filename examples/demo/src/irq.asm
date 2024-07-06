@@ -65,11 +65,6 @@ IRQ_M:
 	pla
 	rti
 
-
-
-_UserIrq:
-	jmp (user_irq)
-
 IRQ:
 	pha
 
@@ -80,7 +75,7 @@ IRQ:
 	sta $4015
 
 	dec irq_user_counter
-	beq _UserIrq
+	beq RunUserIRQ
 IRQ_Continue:
 	dec irq_counter_hi
 
@@ -135,7 +130,7 @@ IRQ_Continue:
 	pla
 	rti
 
-UserIRQ:
+RunUserIRQ:
 	tya
 	pha
 
@@ -152,12 +147,7 @@ UserIRQ:
 	bit $00        ; 3
 	sbc #1         ; 2
 	bcs @DelayLoop ; 3
-
-	lda pending_ppu_mask
-	eor #%00100001
-	sta PPUMASK
-	sta pending_ppu_mask
-
+	jsr UserIRQ
 	pla
 	tay
 	inc user_irq_index

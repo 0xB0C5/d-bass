@@ -75,3 +75,10 @@ SR_UpdateRasterFX:
 
 	rts
 
+
+UserIRQ:
+	lda pending_ppu_mask
+	eor #%00100001
+	sta PPUMASK
+	sta pending_ppu_mask
+	rts
