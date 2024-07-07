@@ -19,8 +19,6 @@ irq_durations: .res 2
 
 irq_idx: .res 1
 
-irq_pending_sample: .res 1
-
 irq_user_counter: .res 1
 
 user_irq_index: .res 1
@@ -45,7 +43,7 @@ user_irq_counters: .res DBASS_MAX_USER_IRQ_COUNT
 dbass_irq_handler:
 	pha
 
-	lda irq_pending_sample
+	lda irq_idx
 	sta $4012
 
 	lda #$1f
@@ -57,9 +55,6 @@ IRQ_Continue:
 	dec irq_counter_hi
 
 	beq :+
-	
-	lda irq_idx
-	sta irq_pending_sample
 	
 	pla
 	rti
@@ -74,12 +69,6 @@ IRQ_Continue:
 	lda #1
 	sta irq_idx
 
-	bit irq_counter_lo
-	bpl :+
-	ora #2
-:
-	sta irq_pending_sample
-
 	pla
 	rti
 
@@ -87,13 +76,6 @@ IRQ_Continue:
 
 	lda #0
 	sta irq_idx
-
-	bit irq_counter_lo
-	bpl :+
-	ora #2
-:
-
-	sta irq_pending_sample
 
 	clc
 	lda irq_counter_lo
@@ -276,18 +258,10 @@ dbass_nmi_handler:
 
 	rti
 
-
 .segment "DATA"
+
 .repeat 64
 	.byte $00
 .endrepeat
 
-.repeat 64
-	.byte $ff
-.endrepeat
-
-.repeat 64
-	.byte $0f
-.endrepeat
-
-.byte $f0
+.byte $ff
