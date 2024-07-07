@@ -72,6 +72,9 @@ TODO : document how to silence other channels by other means and/or support pres
 
 Audio
 -----
+D-Bass produces a waveform that looks like this:
+![Waveform](https://github.com/0xB0C5/d-bass/blob/main/docs/wave.png)
+
 `dbass_period` is a 2-byte period for the wave, measured in 256ths of a DMC IRQ at rate `$e`.
 To play a note with frequency `f` in Hz, set `dbass_period` to `1060604.8 / f`.
 
