@@ -79,7 +79,7 @@ D-Bass produces a waveform that looks like this:
 To play a note with frequency `f` in Hz, set `dbass_period` to `1060604.8 / f`.
 
 D-Bass audio works best when playing low notes (as a bass).
-Low periods/high frequencies use more CPU.
+Low periods/high frequencies use more CPU and are distorted.
 Periods below `$1000` are not recommended.
 Periods below `$200` will not work.
 
