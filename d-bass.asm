@@ -6,10 +6,6 @@
 
 .segment "ZEROPAGE"
 
-; TODO : REMOVE THIS
-irq_next1: .res 1
-; END
-
 irq_counter_lo: .res 1
 irq_counter_hi: .res 1
 
@@ -268,20 +264,6 @@ dbass_update:
 	sta irq_durations+2
 :
 
-	; irq_next1 is the irq state after state 1.
-	; This is 0 when width is 0, 2 otherwise.
-	ldx #2
-	lda irq_durations+2
-	bne :+
-	tax
-	; Special case: if irq happens to be in state 2, force it into state 0
-	lda irq_idx
-	cmp #2
-	bne :+
-	stx irq_idx
-:
-	stx irq_next1
-
 	; remaining duration goes to irq_durations+0
 	lda dbass_period+1
 	sec
@@ -326,9 +308,6 @@ dbass_nmi_handler:
 	tya
 	pha
 
-	; TODO : we need to let IRQs happen during user NMI handler
-	; but for some reason putting a cli here breaks it.
-
 	jsr DBASS_USER_NMI_HANDLER
 
 	pla
@@ -336,7 +315,6 @@ dbass_nmi_handler:
 	pla
 	tax
 	pla
-
 
 	rti
 
