@@ -72,14 +72,14 @@ TODO : document how to silence other channels by other means and/or support pres
 
 Audio
 -----
-`dbass_period` is a 16-bit period for the wave, measured in 256ths of a DMC IRQ at rate `$e`.
+`dbass_period` is a 2-byte period for the wave, measured in 256ths of a DMC IRQ at rate `$e`.
 To play a note with frequency `f` in Hz, set `dbass_period` to `1060604.8 / f`.
 
 Lower period/higher frequency waves use more CPU.
 Periods below `$1000` are not recommended.
 Periods below `$200` will not work.
 
-`dbass_volume` is an 8-bit volume and timbre for the wave. It represents the number of DMC IRQs per period the wave will rise.
+`dbass_volume` is a 1-byte volume and timbre for the wave. It represents the number of DMC IRQs per period the wave will rise.
 If the volume would cause the wave to rise for more than half the period, it instead rises for approximately half the period.
 
 Custom User IRQs
