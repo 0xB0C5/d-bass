@@ -16,5 +16,5 @@
 ; ###################
 
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
-.define DBASS_MAX_USER_IRQ_COUNT 4
+.define DBASS_USER_IRQ_COUNT 4
 .define DBASS_SPRITES sprites

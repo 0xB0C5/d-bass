@@ -22,7 +22,7 @@ cpu_counter: .res 2
 
 pending_ppu_mask: .res 1
 
-raster_wave_indices: .res DBASS_MAX_USER_IRQ_COUNT
+raster_wave_indices: .res DBASS_USER_IRQ_COUNT
 
 raster_direction: .res 1
 

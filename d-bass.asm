@@ -1,7 +1,6 @@
 
 .include "d-bass.inc"
 
-.import DBASS_USER_NMI_HANDLER
 .import DBASS_USER_IRQ_HANDLER
 .import DBASS_SPRITES
 
@@ -31,24 +30,25 @@ nmi_user_counter: .res 1
 
 .segment "BSS"
 
-dbass_user_times_irqs: .res DBASS_MAX_USER_IRQ_COUNT
-dbass_user_times_ticks: .res DBASS_MAX_USER_IRQ_COUNT
+dbass_user_times_irqs: .res DBASS_USER_IRQ_COUNT
+dbass_user_times_ticks: .res DBASS_USER_IRQ_COUNT
 
-user_syncs_ticks: .res DBASS_MAX_USER_IRQ_COUNT
+user_syncs_ticks: .res DBASS_USER_IRQ_COUNT
 
-user_irq_counters: .res DBASS_MAX_USER_IRQ_COUNT
+user_irq_counters: .res DBASS_USER_IRQ_COUNT
 
 .segment "DATA"
 
-samples:
 .align 64
+
+samples:
 .repeat 64
 	.byte $00
 .endrepeat
 
-sample0 = <((samples - $c000) / 64)
-
 .byte $ff
+
+sample0 = <((samples - $c000) / 64)
 
 .segment "CODE"
 
@@ -103,6 +103,8 @@ IRQ_Continue:
 	rti
 
 RunUserIRQ:
+	txa
+	pha
 	tya
 	pha
 
@@ -122,6 +124,8 @@ RunUserIRQ:
 	jsr DBASS_USER_IRQ_HANDLER
 	pla
 	tay
+	pla
+	tax
 	inc user_irq_index
 
 	jmp IRQ_Continue
@@ -151,7 +155,7 @@ dbass_update:
 
 	; Compute user times.
 	; Store in user_irq_counters.
-	ldx #DBASS_MAX_USER_IRQ_COUNT-1
+	ldx #DBASS_USER_IRQ_COUNT-1
 @UserTimeLoop:
 	lda dbass_user_times_ticks, x
 	clc
@@ -170,7 +174,7 @@ dbass_update:
 
 	; Compute expected_nmi_user_counter:
 	;   expected_nmi_user_counter = user_time_irqs[-1] - frame_time_irqs
-	lda user_irq_counters+DBASS_MAX_USER_IRQ_COUNT-1
+	lda user_irq_counters+DBASS_USER_IRQ_COUNT-1
 	sec
 	sbc #51 ; Whole IRQs per frame
 	sta expected_nmi_user_counter
@@ -196,11 +200,11 @@ dbass_update:
 	sta user_irq_counters, x
 	
 	inx
-	cpx #DBASS_MAX_USER_IRQ_COUNT-1
+	cpx #DBASS_USER_IRQ_COUNT-1
 	bcc @UserIrqCountersLoop
 	
 	lda #0
-	sta user_irq_counters+DBASS_MAX_USER_IRQ_COUNT-1
+	sta user_irq_counters+DBASS_USER_IRQ_COUNT-1
 
 	; Update sync to next frame.
 	lda sync_ticks_lo
