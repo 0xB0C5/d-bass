@@ -75,7 +75,7 @@ Audio
 `dbass_period` is a 16-bit period for the wave, measured in 256ths of a DMC IRQ at rate `$e`.
 To play a note with frequency `f` in Hz, set `dbass_period` to `1060604.8 / f`.
 
-Lower period/higher frequency waves use more CPU usage.
+Lower period/higher frequency waves use more CPU.
 Periods below `$1000` are not recommended.
 Periods below `$200` will not work.
 
