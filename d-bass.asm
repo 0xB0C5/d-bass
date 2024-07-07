@@ -15,8 +15,7 @@ dbass_volume: .res 1
 irq_counter_lo: .res 1
 irq_counter_hi: .res 1
 
-; TODO : 2?
-irq_durations: .res 4
+irq_durations: .res 2
 
 irq_idx: .res 1
 
@@ -244,9 +243,6 @@ dbass_update:
 :
 	sta irq_durations+1
 
-	lda #0 ; dmc_width
-	sta irq_durations+2
-
 	; volume can be at most half the period minus 1
 	lda dbass_period+1
 	sec
@@ -257,46 +253,12 @@ dbass_update:
 	sta irq_durations+1
 :
 
-	; width can be at most half the remaining duration (period minus 2 * volume)
-	lda dbass_period+1
-	lsr
-	sec
-	sbc irq_durations+1
-	cmp irq_durations+2
-	bcs :+
-	sta irq_durations+2
-:
-
 	; remaining duration goes to irq_durations+0
 	lda dbass_period+1
 	sec
-	sbc irq_durations+2
 	sbc irq_durations+1
 	sta irq_durations+0
 	
-	; OK now convert to new M wave thingy
-	lda irq_durations+2
-	beq @End
-	lsr
-	adc #0
-	cmp irq_durations+1
-	bcc :+
-	lda irq_durations+1
-:
-
-	sta irq_durations+3
-
-	lda irq_durations+2
-	sec
-	sbc irq_durations+3
-	bne :+
-	lda #1
-	dec irq_durations+0
-:
-	sta irq_durations+2
-	
-
-@End:
 	cli
 
 	rts
