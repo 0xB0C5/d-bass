@@ -15,6 +15,11 @@
 ; # D-Bass Settings #
 ; ###################
 
+; Your custom IRQ handler.
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
+
+; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
+
+; The address of OAM data to be copied via OAM DMA, e.g. $200.
 .define DBASS_SPRITES sprites

@@ -1,7 +1,7 @@
 version	major=2,minor=0
 info	csym=0,file=13,lib=0,line=735,mod=2,scope=3,seg=11,span=1147,sym=137,type=14
 file	id=0,name="src/main.asm",size=680,mtime=0x668ACCEC,mod=0
-file	id=1,name="src/../../../d-bass.inc",size=427,mtime=0x668B0FA4,mod=0
+file	id=1,name="src/../../../d-bass.inc",size=596,mtime=0x668B108A,mod=0
 file	id=2,name="src/constants.asm",size=26,mtime=0x66816451,mod=0
 file	id=3,name="src/addresses.asm",size=655,mtime=0x668B09BB,mod=0
 file	id=4,name="src/nes_addresses.asm",size=179,mtime=0x61B7FAD8,mod=0
@@ -12,7 +12,7 @@ file	id=8,name="src/init.asm",size=3510,mtime=0x66896B4C,mod=0
 file	id=9,name="src/test_song.asm",size=2821,mtime=0x6689696A,mod=0
 file	id=10,name="src/../data/chars.chr",size=8192,mtime=0x66789DF4,mod=0
 file	id=11,name="../../d-bass.asm",size=4520,mtime=0x668B09B5,mod=1
-file	id=12,name="../../d-bass.inc",size=427,mtime=0x668B0FA4,mod=1
+file	id=12,name="../../d-bass.inc",size=596,mtime=0x668B108A,mod=1
 line	id=0,file=8,line=255,span=803
 line	id=1,file=8,line=98
 line	id=2,file=8,line=186,span=750
