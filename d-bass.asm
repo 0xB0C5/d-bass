@@ -62,8 +62,8 @@ dbass_irq_handler:
 	sta $4015
 
 	dec irq_user_counter
-	beq RunUserIRQ
-IRQ_Continue:
+	beq run_user_irq
+irq_continue:
 	dec irq_counter_hi
 
 	beq :+
@@ -75,8 +75,9 @@ IRQ_Continue:
 	lda dmc_sample
 	cmp #sample0
 
-	bne @Sample1
+	bne @odd_update
 
+	; even update
 	lda #sample0 + 1
 	sta dmc_sample
 
@@ -86,7 +87,7 @@ IRQ_Continue:
 	pla
 	rti
 
-@Sample1:
+@odd_update:
 	lda #sample0
 	sta dmc_sample
 
@@ -102,7 +103,7 @@ IRQ_Continue:
 	pla
 	rti
 
-RunUserIRQ:
+run_user_irq:
 	txa
 	pha
 	tya
@@ -117,10 +118,10 @@ RunUserIRQ:
 	; Delay by 8*(user_sync_ticks) cpu cycles.
 	lda user_syncs_ticks, y ; carry is set - sync is never above 71
 	sec
-@DelayLoop:
-	bit $00        ; 3
-	sbc #1         ; 2
-	bcs @DelayLoop ; 3
+@delay_loop:
+	bit $00         ; 3
+	sbc #1          ; 2
+	bcs @delay_loop ; 3
 	jsr DBASS_USER_IRQ_HANDLER
 	pla
 	tay
@@ -128,7 +129,7 @@ RunUserIRQ:
 	tax
 	inc user_irq_index
 
-	jmp IRQ_Continue
+	jmp irq_continue
 
 dbass_init:
 	lda #1
@@ -142,13 +143,13 @@ dbass_update:
 	; Update sync based on expected_nmi_user_counter
 	lda nmi_user_counter
 	cmp expected_nmi_user_counter
-	beq @EndSyncUpdate
+	beq @end_sync_reset
 
 	lda #0
 	sta sync_ticks
 	sta sync_ticks_lo
 
-@EndSyncUpdate:
+@end_sync_reset:
 
 	; TODO : figure out best way to handle sei/cli
 	sei
@@ -156,7 +157,7 @@ dbass_update:
 	; Compute user times.
 	; Store in user_irq_counters.
 	ldx #DBASS_USER_IRQ_COUNT-1
-@UserTimeLoop:
+@user_time_loop:
 	lda dbass_user_times_ticks, x
 	clc
 	adc sync_ticks
@@ -170,7 +171,7 @@ dbass_update:
 	adc #0
 	sta user_irq_counters, x
 	dex
-	bpl @UserTimeLoop
+	bpl @user_time_loop
 
 	; Compute expected_nmi_user_counter:
 	;   expected_nmi_user_counter = user_time_irqs[-1] - frame_time_irqs
@@ -192,7 +193,7 @@ dbass_update:
 
 	; Update user_irq_counters to be relative.
 	ldx #0 ; inx?
-@UserIrqCountersLoop:
+@user_irq_counters_loop:
 	
 	lda user_irq_counters+1, x
 	sec
@@ -201,7 +202,7 @@ dbass_update:
 	
 	inx
 	cpx #DBASS_USER_IRQ_COUNT-1
-	bcc @UserIrqCountersLoop
+	bcc @user_irq_counters_loop
 	
 	lda #0
 	sta user_irq_counters+DBASS_USER_IRQ_COUNT-1
