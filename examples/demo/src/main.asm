@@ -18,8 +18,6 @@
 .include "nes_addresses.asm"
 
 .segment "DATA"
-.include "samples.asm"
-
 .segment "EMPTY"
 .segment "CODE"
 
@@ -28,7 +26,6 @@
 .include "sprites.asm"
 .include "nmi.asm"
 .include "init.asm"
-.include "dmc.asm"
 .include "test_song.asm"
 
 .segment "CHARS"
