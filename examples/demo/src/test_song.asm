@@ -1,21 +1,6 @@
 PeriodsLo: .byte 167,51,56,175,147,221,135,141,232,148,141,206,84,25,28,88,202,110,68,70,116,202,71,231,170,141,142,172,229,55,162,35,186,101,35,244,213,198,199,214,242,28,81,146,221,51,146,250,106,227,99
 PeriodsHi: .byte 150,142,134,126,119,112,106,100,94,89,84,79,75,71,67,63,59,56,53,50,47,44,42,39,37,35,33,31,29,28,26,25,23,22,21,19,18,17,16,15,14,14,13,12,11,11,10,9,9,8,8
 
-Widths:
-DrumArpWidths:
-	.byte  0, 0, 0, 0, 7, 7, 6, 6
-	.byte  5, 5, 4, 4, 3, 3, 2, 2
-	.byte  2, 2, 2, 2, 2, 2, 2, 2
-SquareWidths:
-	.byte $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
-	.byte $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
-BassWidths:
-	.byte  3, 5, 9,11,13,15,16,17
-	.byte 18,19,21,25,30,35,99,99
-DrumBassWidths:
-	.byte 99,99,99,99,13,15,16,17
-	.byte 18,19,21,17,19,21,22,22
-
 Volumes:
 DrumArpVolume:
 	.byte 99,99,99,99,3,3,3
@@ -47,15 +32,6 @@ SnareArpMajPitches:
 	.byte $80 | 36, $80 | 35, $80 | 34, $80 | 33
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
 	.byte 0, 0, 4, 4, 7, 7, 0, 0, 4, 4, 7, 7
-
-InstrumentWidthStarts:
-	.byte 0
-	.byte SquareWidths - Widths
-	.byte BassWidths - Widths
-	.byte DrumBassWidths - Widths
-	.byte DrumBassWidths - Widths
-	.byte DrumArpWidths - Widths
-	.byte DrumArpWidths - Widths
 
 InstrumentVolumeStarts:
 	.byte 0
@@ -95,9 +71,6 @@ SR_UpdateTestSong:
 	lda InstrumentVolumeStarts, y
 	sta song_volume_idx
 	
-	lda InstrumentWidthStarts, y
-	sta song_width_idx
-	
 	lda InstrumentPitchStarts, y
 	sta song_pitch_idx
 
@@ -115,14 +88,9 @@ SR_UpdateTestSong:
 
 	ldx song_volume_idx
 	lda Volumes, x
-	sta dmc_volume
+	sta dbass_volume
 	inc song_volume_idx
 	
-	ldx song_width_idx
-	lda Widths, x
-	sta dmc_width
-	inc song_width_idx
-
 	ldx song_pitch_idx
 	lda Pitches, x
 	bmi :+
@@ -134,9 +102,9 @@ SR_UpdateTestSong:
 	adc #5
 	tay
 	lda PeriodsLo, y
-	sta dmc_period_lo
+	sta dbass_period+0
 	lda PeriodsHi, y
-	sta dmc_period_hi
+	sta dbass_period+1
 
 	inc song_pitch_idx
 

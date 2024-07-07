@@ -1,12 +1,12 @@
-NMI:
-	pha
-	lda irq_user_counter
-	sta nmi_user_counter
+
+.proc user_nmi_handler
 	lda #>sprites
     sta OAMDMA
+
 	inc nmi_done
-	pla
-	rti
+	rts
+.endproc
+.export user_nmi_handler
 
 SR_AdvanceFrame:
 	; Wait for NMI thread to increment nmi_done.

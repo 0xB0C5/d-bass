@@ -66,9 +66,9 @@ SR_UpdateRasterFX:
 	
 	tay
 	lda LineIrqs, y
-	sta user_times_irqs, x
+	sta dbass_user_times_irqs, x
 	lda LineTicks, y
-	sta user_times_ticks, x
+	sta dbass_user_times_ticks, x
 	
 	dex
 	bpl @Loop
@@ -76,9 +76,11 @@ SR_UpdateRasterFX:
 	rts
 
 
-UserIRQ:
+.proc user_irq_handler
 	lda pending_ppu_mask
 	eor #%00100001
 	sta PPUMASK
 	sta pending_ppu_mask
 	rts
+.endproc
+.export user_irq_handler

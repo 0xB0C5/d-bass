@@ -11,6 +11,8 @@
 .byte $00
 .byte $00, $00, $00, $00, $00 ; filler bytes
 
+.include "../../../d-bass.inc"
+
 .include "constants.asm"
 .include "addresses.asm"
 .include "nes_addresses.asm"
@@ -25,7 +27,6 @@
 .include "raster.asm"
 .include "sprites.asm"
 .include "nmi.asm"
-.include "irq.asm"
 .include "init.asm"
 .include "dmc.asm"
 .include "test_song.asm"
@@ -34,6 +35,6 @@
 .incbin "../data/chars.chr"
 
 .segment "VECTORS"
-    .word NMI
-    .word Reset
-	.word IRQ
+	.word dbass_nmi_handler
+	.word Reset
+	.word dbass_irq_handler

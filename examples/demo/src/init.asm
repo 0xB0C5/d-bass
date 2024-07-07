@@ -132,16 +132,7 @@ ClearMem:
 	lda #$10
 	sta $4015
 
-	lda #1
-	sta irq_counter_hi
-
-	lda #14
-	sta dmc_period_hi
-	lda #0
-	sta dmc_period_lo
-	lda #1
-	sta dmc_volume
-	sta dmc_width
+	jsr dbass_init
 
 	lda #%00011110
 	sta pending_ppu_mask
@@ -153,7 +144,7 @@ ClearMem:
 
 @Forever:
 	jsr SR_UpdateTestSong
-	jsr SR_UpdateDmc
+	jsr dbass_update
 	jsr SR_UpdateRasterFX
 	jsr SR_UpdateSprites
 
