@@ -1,18 +1,9 @@
 
-.proc user_nmi_handler
-	lda #>sprites
-    sta OAMDMA
-
-	inc nmi_done
-	rts
-.endproc
-.export user_nmi_handler
-
 SR_AdvanceFrame:
-	; Wait for NMI thread to increment nmi_done.
+	; Wait for d-bass to increment dbass_nmi_counter.
 	lda #0
 	tax
-	sta nmi_done
+	sta dbass_nmi_counter
 	clc
 @WaitForVBlank:
 	cpx #$ff              ; 2  2
@@ -20,7 +11,7 @@ SR_AdvanceFrame:
 	adc #0                ; 2  6
 	nop                   ; 2  8
 	nop                   ; 2 10
-	ldy nmi_done          ; 3 13
+	ldy dbass_nmi_counter ; 3 13
 	beq @WaitForVBlank    ; 3 16
 @EndWaitForVBlank:
 
@@ -52,13 +43,6 @@ SR_AdvanceFrame:
 	inx
 	cpx #32
 	bne :-
-
-
-	; If nmi_done is 0, then we're in RenderImmediate
-	lda nmi_done
-	bne :+
-	rts
-:
 
 	; Set the scroll.
 	bit PPUSTATUS
@@ -96,9 +80,9 @@ SR_EnablePPU:
 
 SR_DisablePPU:
 	lda #$00
-	sta nmi_done
+	sta dbass_nmi_counter
 @WaitForVBlank:
-	lda nmi_done
+	lda dbass_nmi_counter
 	beq @WaitForVBlank
 
 	lda #$00

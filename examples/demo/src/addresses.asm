@@ -2,7 +2,6 @@
 
 temp: .res 16
 
-nmi_done: .res 1
 nmi_temp: .res 1
 
 joypad_buttons_p1: .res 1
@@ -35,6 +34,7 @@ song_pitch: .res 1
 
 .segment "OAM"
 sprites: .res $100
+.export sprites
 
 .segment "BSS"
 

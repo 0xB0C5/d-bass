@@ -3,8 +3,14 @@
 
 .import DBASS_USER_NMI_HANDLER
 .import DBASS_USER_IRQ_HANDLER
+.import DBASS_SPRITES
 
 .segment "ZEROPAGE"
+
+dbass_nmi_counter: .res 1
+
+dbass_period: .res 2
+dbass_volume: .res 1
 
 irq_counter_lo: .res 1
 irq_counter_hi: .res 1
@@ -22,9 +28,6 @@ user_irq_index: .res 1
 
 sync_ticks: .res 1
 sync_ticks_lo: .res 1
-
-dbass_period: .res 2
-dbass_volume: .res 1
 
 expected_nmi_user_counter: .res 1
 nmi_user_counter: .res 1
@@ -303,17 +306,10 @@ dbass_nmi_handler:
 	lda irq_user_counter
 	sta nmi_user_counter
 
-	txa
-	pha
-	tya
-	pha
+	lda #>DBASS_SPRITES
+    sta $4014
 
-	jsr DBASS_USER_NMI_HANDLER
-
-	pla
-	tay
-	pla
-	tax
+	inc dbass_nmi_counter
 	pla
 
 	rti
