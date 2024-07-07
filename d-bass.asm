@@ -17,7 +17,7 @@ irq_counter_hi: .res 1
 
 irq_durations: .res 2
 
-irq_idx: .res 1
+dmc_sample: .res 1
 
 irq_user_counter: .res 1
 
@@ -38,12 +38,24 @@ user_syncs_ticks: .res DBASS_MAX_USER_IRQ_COUNT
 
 user_irq_counters: .res DBASS_MAX_USER_IRQ_COUNT
 
+.segment "DATA"
+
+samples:
+.align 64
+.repeat 64
+	.byte $00
+.endrepeat
+
+sample0 = <((samples - $c000) / 64)
+
+.byte $ff
+
 .segment "CODE"
 
 dbass_irq_handler:
 	pha
 
-	lda irq_idx
+	lda dmc_sample
 	sta $4012
 
 	lda #$1f
@@ -60,22 +72,23 @@ IRQ_Continue:
 	rti
 :
 
-	lda irq_idx
-	bne @Idx1
+	lda dmc_sample
+	cmp #sample0
+
+	bne @Sample1
+
+	lda #sample0 + 1
+	sta dmc_sample
 
 	lda irq_durations+1
 	sta irq_counter_hi
 	
-	lda #1
-	sta irq_idx
-
 	pla
 	rti
 
-@Idx1:
-
-	lda #0
-	sta irq_idx
+@Sample1:
+	lda #sample0
+	sta dmc_sample
 
 	clc
 	lda irq_counter_lo
@@ -213,9 +226,10 @@ dbass_update:
 
 	lda dbass_volume
 	bne :+
-	; Silence: clear irq_idx so the samples we write are 0s.
+	; Silence: clear dmc_sample so the samples we write are 0s.
 	; set irq counter so no updates will occur this frame.
-	sta irq_idx
+	lda #sample0
+	sta dmc_sample
 	; TODO : a more forgiving way of doing this?
 	lda #60 ; Give a little extra time of silence in case this subroutine isn't called at the same time each frame.
 	sta irq_counter_hi
@@ -257,11 +271,3 @@ dbass_nmi_handler:
 	pla
 
 	rti
-
-.segment "DATA"
-
-.repeat 64
-	.byte $00
-.endrepeat
-
-.byte $ff
