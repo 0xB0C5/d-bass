@@ -137,6 +137,8 @@ dbass_init:
 	rts
 
 dbass_update:
+	; Update user IRQs.
+
 	lda #0
 	sta user_irq_index
 
@@ -151,10 +153,9 @@ dbass_update:
 
 @end_sync_reset:
 
-	; TODO : figure out best way to handle sei/cli
 	sei
 
-	; Compute user times.
+	; Compute user times with sync.
 	; Store in user_irq_counters.
 	ldx #DBASS_USER_IRQ_COUNT-1
 @user_time_loop:
@@ -174,7 +175,7 @@ dbass_update:
 	bpl @user_time_loop
 
 	; Compute expected_nmi_user_counter:
-	;   expected_nmi_user_counter = user_time_irqs[-1] - frame_time_irqs
+	;   expected_nmi_user_counter = user_irq_counters[-1] - frame_time_irqs
 	lda user_irq_counters+DBASS_USER_IRQ_COUNT-1
 	sec
 	sbc #51 ; Whole IRQs per frame
@@ -182,8 +183,8 @@ dbass_update:
 
 	; Compute irq_user_counter:
 	;   irqs_so_far = nmi_user_counter - irq_user_counter
-	;   irq_user_counter = user_time_irqs - irqs_so_far
-	;         = user_time_irqs + irq_user_counter - nmi_user_counter
+	;   irq_user_counter = user_irq_counters[0] - irqs_so_far
+	;         = user_irq_counters[0] + irq_user_counter - nmi_user_counter
 	lda user_irq_counters+0
 	clc
 	adc irq_user_counter
@@ -192,27 +193,29 @@ dbass_update:
 	sta irq_user_counter
 
 	; Update user_irq_counters to be relative.
-	ldx #0 ; inx?
+	ldx #0
 @user_irq_counters_loop:
 	
 	lda user_irq_counters+1, x
 	sec
 	sbc user_irq_counters, x
 	sta user_irq_counters, x
-	
+
 	inx
-	cpx #DBASS_USER_IRQ_COUNT-1
-	bcc @user_irq_counters_loop
-	
+	cpx #DBASS_USER_IRQ_COUNT
+	bne @user_irq_counters_loop
+
 	lda #0
 	sta user_irq_counters+DBASS_USER_IRQ_COUNT-1
+
+	cli
 
 	; Update sync to next frame.
 	lda sync_ticks_lo
 	clc
 	adc #143 ; Very slightly underestimate sync change, because we only correct in one direction.
 	sta sync_ticks_lo
-	
+
 	lda sync_ticks
 	adc #50
 	cmp #72
@@ -223,16 +226,13 @@ dbass_update:
 :
 	sta sync_ticks
 
-	; TODO : figure out sei/cli
-
-	cli
-	nop
+	; Update audio
 	sei
 
 	lda dbass_volume
 	bne :+
-	; Silence: clear dmc_sample so the samples we write are 0s.
-	; set irq counter so no updates will occur this frame.
+	; Silence: set the pending DMC sample to the all-zero sample.
+	; Set irq counter so no updates will occur this frame.
 	lda #sample0
 	sta dmc_sample
 	; TODO : a more forgiving way of doing this?
@@ -244,10 +244,8 @@ dbass_update:
 :
 	sta irq_durations+1
 
-	; volume can be at most half the period minus 1
+	; Volume/irq_durations+1 can be at most half the period
 	lda dbass_period+1
-	sec
-	sbc #1
 	lsr
 	cmp irq_durations+1
 	bcs :+
@@ -259,7 +257,7 @@ dbass_update:
 	sec
 	sbc irq_durations+1
 	sta irq_durations+0
-	
+
 	cli
 
 	rts
