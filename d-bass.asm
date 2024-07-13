@@ -129,9 +129,42 @@ run_user_irq:
 
 	jmp irq_continue
 
-dbass_init:
+dbass_start:
+	; Ensure user IRQs won't run until after dmc_update is called.
+	lda #0
+	sta irq_user_counter 
+
+	; Ensure audio update will run on first IRQ.
 	lda #1
-	sta irq_counter_hi
+	stx irq_counter_hi
+
+	; Sample length = 1 byte.
+	lda #0
+	sta $4013
+
+	; Sample address.
+	lda #sample0
+	sta $4012
+
+	; Generate IRQs at rate $e.
+	lda #$8e
+	sta $4010
+
+	; Enable DMC.
+	lda #$1f
+	sta $4015
+
+	rts
+
+dbass_stop:
+	; Stop generating IRQs.
+	lda #$0e
+	sta $4015
+
+	; Disable DMC.
+	lda #$0f
+	sta $4015
+
 	rts
 
 dbass_update:

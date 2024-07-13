@@ -1,7 +1,8 @@
 
 .global dbass_irq_handler
 .global dbass_nmi_handler
-.global dbass_init
+.global dbass_start
+.global dbass_stop
 .global dbass_update
 
 .global dbass_user_times_irqs

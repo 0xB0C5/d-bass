@@ -41,7 +41,9 @@ Create and export a custom IRQ handler for your raster effects:
 .export user_irq_handler
 ```
 
-Modify your reset handler to call `jsr dbass_init`.
+Before you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass.
+
+Before you disable NMIs, call `jsr dbass_disable` to stop D-Bass. Note: this hasn't been tested.
 
 NMI/VBlank
 ----------
@@ -80,7 +82,7 @@ To play a note with frequency `f` in Hz, set `dbass_period` to `1060604.8 / f`.
 
 D-Bass audio works best when playing low notes (as a bass).
 Low periods/high frequencies use more CPU and are distorted.
-Periods below `$1000` are not recommended.
+Periods below `$1000` are very distorted.
 Periods below `$200` will not work.
 
 `dbass_volume` is a 1-byte volume and timbre for the wave. It represents the number of DMC IRQs per period the wave will rise.
@@ -107,15 +109,20 @@ Your IRQ handler must return within about 500 CPU cycles.
 
 The first time your IRQ handler is called must be after `dbass_update` is called. (This is why you want to call `dbass_update` as soon as possible after VBlank.)
 
+Currently, D-Bass takes some time to measure the synchronization between NMI and IRQ.
+This means your custom IRQs will be called at slightly the wrong times for the first up to 36 frames.
+
 Feature Roadmap
 ===============
 
 - Support user NMI handler.
-- Call `dbass_update` automatically.
-- Support dynamic user IRQ count.
+- Better way to enable/disable that plays more nicely with enabling/disabling PPU NMIs.
+- Add a way to measure sync directly rather than relying entirely on dynamic corrections.
 - Faster no-audio mode for projects that only need IRQs.
 - Faster no-IRQ mode for projects that only need audio.
+- Support dynamic user IRQ count.
 - Support faster coarsely-timed user IRQs.
+- Call `dbass_update` automatically from IRQs.
 - Support IRQ-driven DMA-conflict-free controller reading.
 - HQ audio mode for higher pitches at the expense of CPU.
 - Support other waveforms: M-shaped waves and/or fixed-pattern waves.

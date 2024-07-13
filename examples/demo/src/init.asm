@@ -122,24 +122,14 @@ ClearMem:
 	sta ppu_pending_scroll_x
 	sta ppu_pending_scroll_y
 
-	lda #$00
-	sta $4013
-	sta $4012
-
-	lda #$8e
-	sta $4010
-
-	lda #$10
-	sta $4015
-
-	jsr dbass_init
-
 	lda #%00011110
 	sta pending_ppu_mask
 	
 	jsr SR_InitSprites
 	jsr SR_InitRasterFX
 	
+	jsr dbass_start
+
 	jsr SR_EnablePPU
 
 @Forever:
