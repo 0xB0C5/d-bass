@@ -4,7 +4,7 @@
 .import DBASS_USER_IRQ_HANDLER
 .import DBASS_SPRITES
 
-.segment "ZEROPAGE"
+.segment DBASS_ZP_SEGMENT
 
 dbass_nmi_counter: .res 1
 
@@ -28,7 +28,7 @@ sync_ticks_lo: .res 1
 expected_nmi_user_counter: .res 1
 nmi_user_counter: .res 1
 
-.segment "BSS"
+.segment DBASS_BSS_SEGMENT
 
 dbass_user_times_irqs: .res DBASS_USER_IRQ_COUNT
 dbass_user_times_ticks: .res DBASS_USER_IRQ_COUNT
@@ -37,20 +37,18 @@ user_syncs_ticks: .res DBASS_USER_IRQ_COUNT
 
 user_irq_counters: .res DBASS_USER_IRQ_COUNT
 
-.segment "DATA"
+.segment DBASS_SAMPLES_SEGMENT
 
 .align 64
 
 samples:
-.repeat 64
 	.byte $00
-.endrepeat
-
-.byte $ff
+.align 64
+	.byte $ff
 
 sample0 = <((samples - $c000) / 64)
 
-.segment "CODE"
+.segment DBASS_CODE_SEGMENT
 
 dbass_irq_handler:
 	pha
