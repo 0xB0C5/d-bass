@@ -11,22 +11,21 @@ dbass_nmi_counter: .res 1
 dbass_period: .res 2
 dbass_volume: .res 1
 
-irq_counter_lo: .res 1
-irq_counter_hi: .res 1
+wave_counter_lo: .res 1
+wave_counter_hi: .res 1
 
-irq_durations: .res 2
+wave_durations: .res 2
 
-dmc_sample: .res 1
+wave_sample: .res 1
 
-irq_user_counter: .res 1
-
+user_irq_counter: .res 1
 user_irq_index: .res 1
 
 sync_ticks: .res 1
 sync_ticks_lo: .res 1
 
-expected_nmi_user_counter: .res 1
-nmi_user_counter: .res 1
+expected_nmi_user_irq_counter: .res 1
+nmi_user_irq_counter: .res 1
 
 .segment DBASS_BSS_SEGMENT
 
@@ -53,16 +52,16 @@ sample0 = <((samples - $c000) / 64)
 dbass_irq_handler:
 	pha
 
-	lda dmc_sample
+	lda wave_sample
 	sta $4012
 
 	lda #$1f
 	sta $4015
 
-	dec irq_user_counter
+	dec user_irq_counter
 	beq run_user_irq
 irq_continue:
-	dec irq_counter_hi
+	dec wave_counter_hi
 
 	beq :+
 	
@@ -70,33 +69,33 @@ irq_continue:
 	rti
 :
 
-	lda dmc_sample
+	lda wave_sample
 	cmp #sample0
 
 	bne @odd_update
 
 	; even update
 	lda #sample0 + 1
-	sta dmc_sample
+	sta wave_sample
 
-	lda irq_durations+1
-	sta irq_counter_hi
+	lda wave_durations+1
+	sta wave_counter_hi
 	
 	pla
 	rti
 
 @odd_update:
 	lda #sample0
-	sta dmc_sample
+	sta wave_sample
 
 	clc
-	lda irq_counter_lo
+	lda wave_counter_lo
 	adc dbass_period+0
-	sta irq_counter_lo
+	sta wave_counter_lo
 
 	lda #0
-	adc irq_durations+0
-	sta irq_counter_hi
+	adc wave_durations+0
+	sta wave_counter_hi
 
 	pla
 	rti
@@ -111,7 +110,7 @@ run_user_irq:
 	
 	; Update counter for next user IRQ
 	lda user_irq_counters, y
-	sta irq_user_counter
+	sta user_irq_counter
 
 	; Delay by 8*(user_sync_ticks) cpu cycles.
 	lda user_syncs_ticks, y ; carry is set - sync is never above 71
@@ -132,11 +131,11 @@ run_user_irq:
 dbass_start:
 	; Ensure user IRQs won't run until after dmc_update is called.
 	lda #0
-	sta irq_user_counter 
+	sta user_irq_counter 
 
 	; Ensure audio update will run on first IRQ.
 	lda #1
-	stx irq_counter_hi
+	stx wave_counter_hi
 
 	; Sample length = 1 byte.
 	lda #0
@@ -173,9 +172,9 @@ dbass_update:
 	lda #0
 	sta user_irq_index
 
-	; Update sync based on expected_nmi_user_counter
-	lda nmi_user_counter
-	cmp expected_nmi_user_counter
+	; Update sync based on expected_nmi_user_irq_counter
+	lda nmi_user_irq_counter
+	cmp expected_nmi_user_irq_counter
 	beq @end_sync_reset
 
 	lda #0
@@ -205,23 +204,23 @@ dbass_update:
 	dex
 	bpl @user_time_loop
 
-	; Compute expected_nmi_user_counter:
-	;   expected_nmi_user_counter = user_irq_counters[-1] - frame_time_irqs
+	; Compute expected_nmi_user_irq_counter:
+	;   expected_nmi_user_irq_counter = user_irq_counters[-1] - frame_time_irqs
 	lda user_irq_counters+DBASS_USER_IRQ_COUNT-1
 	sec
 	sbc #51 ; Whole IRQs per frame
-	sta expected_nmi_user_counter
+	sta expected_nmi_user_irq_counter
 
-	; Compute irq_user_counter:
-	;   irqs_so_far = nmi_user_counter - irq_user_counter
-	;   irq_user_counter = user_irq_counters[0] - irqs_so_far
-	;         = user_irq_counters[0] + irq_user_counter - nmi_user_counter
+	; Compute user_irq_counter:
+	;   irqs_so_far = nmi_user_irq_counter - user_irq_counter
+	;   user_irq_counter = user_irq_counters[0] - irqs_so_far
+	;         = user_irq_counters[0] + user_irq_counter - nmi_user_irq_counter
 	lda user_irq_counters+0
 	clc
-	adc irq_user_counter
+	adc user_irq_counter
 	sec
-	sbc nmi_user_counter
-	sta irq_user_counter
+	sbc nmi_user_irq_counter
+	sta user_irq_counter
 
 	; Update user_irq_counters to be relative.
 	ldx #0
@@ -253,7 +252,7 @@ dbass_update:
 	bcc :+
 	sbc #72
 	; If the sync wraps, there is 1 extra IRQ that frame.
-	dec expected_nmi_user_counter
+	dec expected_nmi_user_irq_counter
 :
 	sta sync_ticks
 
@@ -265,29 +264,29 @@ dbass_update:
 	; Silence: set the pending DMC sample to the all-zero sample.
 	; Set irq counter so no updates will occur this frame.
 	lda #sample0
-	sta dmc_sample
+	sta wave_sample
 	; TODO : a more forgiving way of doing this?
 	lda #60 ; Give a little extra time of silence in case this subroutine isn't called at the same time each frame.
-	sta irq_counter_hi
+	sta wave_counter_hi
 
 	cli
 	rts
 :
-	sta irq_durations+1
+	sta wave_durations+1
 
-	; Volume/irq_durations+1 can be at most half the period
+	; Volume/wave_durations+1 can be at most half the period
 	lda dbass_period+1
 	lsr
-	cmp irq_durations+1
+	cmp wave_durations+1
 	bcs :+
-	sta irq_durations+1
+	sta wave_durations+1
 :
 
-	; remaining duration goes to irq_durations+0
+	; remaining duration goes to wave_durations+0
 	lda dbass_period+1
 	sec
-	sbc irq_durations+1
-	sta irq_durations+0
+	sbc wave_durations+1
+	sta wave_durations+0
 
 	cli
 
@@ -295,8 +294,8 @@ dbass_update:
 
 dbass_nmi_handler:
 	pha
-	lda irq_user_counter
-	sta nmi_user_counter
+	lda user_irq_counter
+	sta nmi_user_irq_counter
 
 	lda #>DBASS_SPRITES
     sta $4014
