@@ -2,6 +2,8 @@ D-Bass
 ======
 Use the NES's DMC as a wave channel, and use its IRQs for timed code.
 
+https://github.com/user-attachments/assets/411d44db-75e6-40b1-82df-d1e5088c91ba
+
 Setup
 -----
 Warning: This is a work in progress.
