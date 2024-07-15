@@ -1,9 +1,18 @@
 
+.proc user_nmi_handler
+	lda #>sprites
+	sta $4014
+
+	inc nmi_counter
+	rts
+.endproc
+.export user_nmi_handler
+
 SR_AdvanceFrame:
-	; Wait for d-bass to increment dbass_nmi_counter.
+	; Wait for d-bass to increment nmi_counter.
 	lda #0
 	tax
-	sta dbass_nmi_counter
+	sta nmi_counter
 	clc
 @WaitForVBlank:
 	cpx #$ff              ; 2  2
@@ -11,15 +20,12 @@ SR_AdvanceFrame:
 	adc #0                ; 2  6
 	nop                   ; 2  8
 	nop                   ; 2 10
-	ldy dbass_nmi_counter ; 3 13
+	ldy nmi_counter       ; 3 13
 	beq @WaitForVBlank    ; 3 16
 @EndWaitForVBlank:
 
 	stx cpu_counter+0
 	sta cpu_counter+1
-
-	tsx
-	stx nmi_temp
 
 	bit PPUSTATUS
 	lda ppu_text_addr+1
@@ -80,9 +86,9 @@ SR_EnablePPU:
 
 SR_DisablePPU:
 	lda #$00
-	sta dbass_nmi_counter
+	sta nmi_counter
 @WaitForVBlank:
-	lda dbass_nmi_counter
+	lda nmi_counter
 	beq @WaitForVBlank
 
 	lda #$00

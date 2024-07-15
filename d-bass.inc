@@ -10,7 +10,6 @@
 
 .globalzp dbass_period
 .globalzp dbass_volume
-.globalzp dbass_nmi_counter
 
 ; ###################
 ; # D-Bass Settings #
@@ -28,11 +27,11 @@
 ; Segment for D-Bass DMC samples. Must be within $C000 - $ffff.
 .define DBASS_SAMPLES_SEGMENT "DATA"
 
+; Your custom NMI handler.
+.define DBASS_USER_NMI_HANDLER user_nmi_handler
+
 ; Your custom IRQ handler.
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
 
 ; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
-
-; The address of OAM data to be copied via OAM DMA, e.g. $200.
-.define DBASS_SPRITES sprites
