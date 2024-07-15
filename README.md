@@ -43,30 +43,21 @@ Create and export a custom IRQ handler for your raster effects:
 .export user_irq_handler
 ```
 
+Create and export a custom NMI handler (or replace your existing one). Note that you don't need to preserve registers like you would for a raw NMI handler.
+```
+.proc user_nmi_handler
+	lda #$02
+	sta $4014
+	[more VBlank code]
+	rts
+.endproc
+```
+
 Before you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass.
 
 Before you disable NMIs, call `jsr dbass_disable` to stop D-Bass. Note: this hasn't been tested.
 
-NMI/VBlank
-----------
-Currently, you can't have a custom NMI handler with D-Bass.
-D-Bass's NMI handler will update sprites via OAM DMA and increment `dbass_nmi_counter`.
-To run code in VBlank, you will have to wait for this counter to be incremented.
-
-Additionally, you must call `jsr dbass_update` once per frame, as soon as possible after your VBlank code.
-
-Your code should look something like this:
-```
-	lda #0
-	sta dbass_nmi_counter
-wait_for_nmi:
-	lda dbass_nmi_counter
-	beq wait_for_nmi
-
-	[Your VBlank code]
-
-	jsr dbass_update
-```
+While D-Bass is enabled, you must call `jsr dbass_update` once per frame, as soon as possible after your VBlank code.
 
 Silencing Other Channels
 ------------------------
@@ -117,7 +108,6 @@ This means your custom IRQs will be called at slightly the wrong times for the f
 Feature Roadmap
 ===============
 
-- Support user NMI handler.
 - Better way to enable/disable that plays more nicely with enabling/disabling PPU NMIs.
 - Add a way to measure sync directly rather than relying entirely on dynamic corrections.
 - Faster no-audio mode for projects that only need IRQs.
