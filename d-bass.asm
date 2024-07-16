@@ -4,6 +4,10 @@
 .import DBASS_USER_IRQ_HANDLER
 .import DBASS_USER_NMI_HANDLER
 
+.ifdef DBASS_USER_FIXED_UPDATE
+.import DBASS_USER_FIXED_UPDATE
+.endif
+
 .segment DBASS_ZP_SEGMENT
 
 dbass_period: .res 2
@@ -310,6 +314,10 @@ dbass_nmi_handler:
 	dec expected_nmi_user_irq_counter
 :
 	sta sync_ticks
+
+.ifdef DBASS_USER_FIXED_UPDATE
+	jsr DBASS_USER_FIXED_UPDATE
+.endif
 
 	; Update audio
 	sei

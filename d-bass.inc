@@ -32,5 +32,8 @@
 ; Your custom IRQ handler.
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
 
+; Optional, a subroutine to run once per frame after the NMI handler.
+; .define DBASS_USER_FIXED_UPDATE fixed_update
+
 ; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
