@@ -5,7 +5,7 @@ TICKS_PER_IRQ = 72
 LINE_COUNT = 224
 
 ; TODO : make this actually match the start line!
-START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 1000)
+START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 800)
 
 LineIrqs:
 .repeat LINE_COUNT, I

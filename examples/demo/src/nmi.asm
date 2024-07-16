@@ -3,30 +3,8 @@
 	lda #>sprites
 	sta $4014
 
-	inc nmi_counter
-	rts
-.endproc
-.export user_nmi_handler
-
-SR_AdvanceFrame:
-	; Wait for d-bass to increment nmi_counter.
-	lda #0
-	tax
-	sta nmi_counter
-	clc
-@WaitForVBlank:
-	cpx #$ff              ; 2  2
-	inx                   ; 2  4
-	adc #0                ; 2  6
-	nop                   ; 2  8
-	nop                   ; 2 10
-	ldy nmi_counter       ; 3 13
-	beq @WaitForVBlank    ; 3 16
-@EndWaitForVBlank:
-
-	stx cpu_counter+0
-	sta cpu_counter+1
-
+	lda need_nmi
+	beq @end
 	bit PPUSTATUS
 	lda ppu_text_addr+1
 	sta PPUADDR
@@ -61,6 +39,36 @@ SR_AdvanceFrame:
     lda pending_ppu_mask
     sta PPUMASK
 
+	dec need_nmi
+
+@end:
+	; Update song before returning,
+	; because D-Bass update applies after we return.
+	jmp SR_UpdateTestSong
+	; rts
+.endproc
+.export user_nmi_handler
+
+SR_AdvanceFrame:
+	; Tell the NMI handler to run an update.
+	lda #1
+	sta need_nmi
+	; Wait for the NMI handler to run.
+	lda #0
+	tax
+	clc
+@WaitForNMI:
+	cpx #$ff              ; 2  2
+	inx                   ; 2  4
+	adc #0                ; 2  6
+	nop                   ; 2  8
+	nop                   ; 2 10
+	ldy need_nmi          ; 3 13
+	bne @WaitForNMI    ; 3 16
+
+	stx cpu_counter+0
+	sta cpu_counter+1
+
 	rts
 
 
@@ -85,11 +93,11 @@ SR_EnablePPU:
 
 
 SR_DisablePPU:
-	lda #$00
-	sta nmi_counter
+	lda #1
+	sta need_nmi
 @WaitForVBlank:
-	lda nmi_counter
-	beq @WaitForVBlank
+	lda need_nmi
+	bne @WaitForVBlank
 
 	lda #$00
 	sta PPUCTRL

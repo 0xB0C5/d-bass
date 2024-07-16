@@ -3,7 +3,6 @@
 .global dbass_nmi_handler
 .global dbass_start
 .global dbass_stop
-.global dbass_update
 
 .global dbass_user_times_irqs
 .global dbass_user_times_ticks
@@ -32,6 +31,9 @@
 
 ; Your custom IRQ handler.
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
+
+; Optional, a subroutine to run once per frame after the NMI handler.
+; .define DBASS_USER_FIXED_UPDATE fixed_update
 
 ; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
