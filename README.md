@@ -53,11 +53,9 @@ Create and export a custom NMI handler (or replace your existing one). Note that
 .endproc
 ```
 
-Before you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass.
+After you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass.
 
-Before you disable NMIs, call `jsr dbass_disable` to stop D-Bass. Note: this hasn't been tested.
-
-While D-Bass is enabled, you must call `jsr dbass_update` once per frame, as soon as possible after your VBlank code.
+Before you disable NMIs, call `jsr dbass_stop` to stop D-Bass. Note: this hasn't been tested.
 
 Silencing Other Channels
 ------------------------
@@ -90,7 +88,8 @@ One IRQ is 576 CPU cycles. One tick is 8 CPU cycles. There are 72 ticks per IRQ.
 
 Your code should write these values to the tables `dbass_user_times_irqs` and `dbass_user_times_ticks` respectively.
 Each table is 1 byte per user IRQ (`DBASS_USER_IRQ_COUNT` bytes).
-Changes to these tables will take effect the next time `dbass_update` is called.
+
+Changes to these tables will take effect after your NMI handler returns.
 
 The times must be ordered earliest to latest, and each time must be at least 2 DMC IRQs after the previous.
 
@@ -100,7 +99,9 @@ Your IRQ handler does NOT need to preserve any registers.
 
 Your IRQ handler must return within about 500 CPU cycles.
 
-The first time your IRQ handler is called must be after `dbass_update` is called. (This is why you want to call `dbass_update` as soon as possible after VBlank.)
+The first time for your IRQ handler must be later than when your NMI handler returns,
+by an amount of time that depends on the number of user IRQs.
+1000 CPU cycles between NMI handler return and first user IRQ is probably fine.
 
 Currently, D-Bass takes some time to measure the synchronization between NMI and IRQ.
 This means your custom IRQs will be called at slightly the wrong times for the first up to 36 frames.
@@ -114,7 +115,6 @@ Feature Roadmap
 - Faster no-IRQ mode for projects that only need audio.
 - Support dynamic user IRQ count.
 - Support faster coarsely-timed user IRQs.
-- Call `dbass_update` automatically from IRQs.
 - Support IRQ-driven DMA-conflict-free controller reading.
 - HQ audio mode for higher pitches at the expense of CPU.
 - Support other waveforms: M-shaped waves and/or fixed-pattern waves.
