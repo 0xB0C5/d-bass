@@ -3,7 +3,6 @@
 .global dbass_nmi_handler
 .global dbass_start
 .global dbass_stop
-.global dbass_update
 
 .global dbass_user_times_irqs
 .global dbass_user_times_ticks

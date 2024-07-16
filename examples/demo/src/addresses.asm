@@ -2,7 +2,7 @@
 
 temp: .res 16
 
-nmi_counter: .res 1
+need_nmi: .res 1
 
 joypad_buttons_p1: .res 1
 joypad_buttons_p2: .res 1

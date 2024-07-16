@@ -133,8 +133,6 @@ ClearMem:
 	jsr SR_EnablePPU
 
 @Forever:
-	jsr SR_UpdateTestSong
-	jsr dbass_update
 	jsr SR_UpdateRasterFX
 	jsr SR_UpdateSprites
 
@@ -172,7 +170,6 @@ ClearMem:
 	inc frame_counter
 
 	jsr SR_AdvanceFrame
-
 	jmp @Forever
 
 ; Call with a = letter, x::y = PPU address

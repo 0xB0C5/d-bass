@@ -159,6 +159,8 @@ dbass_start:
 	lda #$1f
 	sta $4015
 
+	cli
+
 	rts
 
 dbass_stop:
@@ -345,6 +347,9 @@ dbass_nmi_handler:
 	tya
 	pha
 	jsr DBASS_USER_NMI_HANDLER
+	
+	jsr dbass_update
+
 	pla
 	tay
 	lda nmi_temp
