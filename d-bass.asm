@@ -174,7 +174,54 @@ dbass_stop:
 
 	rts
 
-dbass_update:
+dbass_nmi_handler:
+	sta nmi_temp
+	lda user_irq_counter
+	sta nmi_user_irq_counter
+
+	stx nmi_temp+1
+	; check if we're in an IRQ.
+	tsx
+	lda $103, x ; high byte of return address
+	cmp #>dbass_irq_handler
+	bne @no_irq
+	lda $102, x ; low byte of return address
+	cmp #<dbass_irq_handler_end
+	bcs @no_irq
+
+	; There's an IRQ happening.
+	; Sneak in a new return address onto the stack for the IRQ handler.
+	; stack: (sp) [flags] [<return] [>return]
+	lda $103, x
+	pha
+	; stack: (sp) [>return] [flags] [<return] [>return]
+	lda $102, x
+	pha
+	; stack: (sp) [<return] [>return] [flags] [<return] [>return]
+	lda $101, x
+	pha
+	; stack: (sp) [flags] [<return] [>return] [flags] [<return] [>return]
+	lda #<@continue
+	sta $102, x
+	; stack: (sp) [flags] [<return] [>return] [flags] [<@continue] [>return]
+	lda #>@continue
+	sta $103, x
+	; stack: (sp) [flags] [<return] [>return] [flags] [<@continue] [>@continue]
+	; restore registers and return to IRQ handler.
+	lda nmi_temp
+	ldx nmi_temp+1
+	rti
+
+@continue:
+	sta nmi_temp
+	stx nmi_temp+1
+
+@no_irq:
+	cli
+	tya
+	pha
+	jsr DBASS_USER_NMI_HANDLER
+	
 	; Update user IRQs.
 
 	lda #0
@@ -276,9 +323,7 @@ dbass_update:
 	; TODO : a more forgiving way of doing this?
 	lda #60 ; Give a little extra time of silence in case this subroutine isn't called at the same time each frame.
 	sta wave_counter_hi
-
-	cli
-	rts
+	jmp @end_nmi_update
 :
 	sta wave_durations+1
 
@@ -296,59 +341,8 @@ dbass_update:
 	sbc wave_durations+1
 	sta wave_durations+0
 
+@end_nmi_update:
 	cli
-
-	rts
-
-dbass_nmi_handler:
-	sta nmi_temp
-	lda user_irq_counter
-	sta nmi_user_irq_counter
-
-	stx nmi_temp+1
-	; check if we're in an IRQ.
-	tsx
-	lda $103, x ; high byte of return address
-	cmp #>dbass_irq_handler
-	bne @no_irq
-	lda $102, x ; low byte of return address
-	cmp #<dbass_irq_handler_end
-	bcs @no_irq
-
-	; There's an IRQ happening.
-	; Sneak in a new return address onto the stack for the IRQ handler.
-	; stack: (sp) [flags] [<return] [>return]
-	lda $103, x
-	pha
-	; stack: (sp) [>return] [flags] [<return] [>return]
-	lda $102, x
-	pha
-	; stack: (sp) [<return] [>return] [flags] [<return] [>return]
-	lda $101, x
-	pha
-	; stack: (sp) [flags] [<return] [>return] [flags] [<return] [>return]
-	lda #<@continue
-	sta $102, x
-	; stack: (sp) [flags] [<return] [>return] [flags] [<@continue] [>return]
-	lda #>@continue
-	sta $103, x
-	; stack: (sp) [flags] [<return] [>return] [flags] [<@continue] [>@continue]
-	; restore registers and return to IRQ handler.
-	lda nmi_temp
-	ldx nmi_temp+1
-	rti
-
-@continue:
-	sta nmi_temp
-	stx nmi_temp+1
-
-@no_irq:
-	cli
-	tya
-	pha
-	jsr DBASS_USER_NMI_HANDLER
-	
-	jsr dbass_update
 
 	pla
 	tay
