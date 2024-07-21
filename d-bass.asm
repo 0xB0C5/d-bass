@@ -226,8 +226,12 @@ dbass_nmi_handler:
 	pha
 	jsr DBASS_USER_NMI_HANDLER
 	
+.if DBASS_USER_IRQ_COUNT = 0
+	; Prevent user IRQs from triggering (they trigger when user_irq_counter decrements to 0)
+	lda #0
+	sta user_irq_counter
+.else
 	; Update user IRQs.
-
 	lda #0
 	sta user_irq_index
 
@@ -314,6 +318,7 @@ dbass_nmi_handler:
 	dec expected_nmi_user_irq_counter
 :
 	sta sync_ticks
+.endif
 
 .ifdef DBASS_USER_FIXED_UPDATE
 	jsr DBASS_USER_FIXED_UPDATE

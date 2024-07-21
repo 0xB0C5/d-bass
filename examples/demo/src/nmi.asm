@@ -37,6 +37,8 @@
 	lda ppu_pending_control
     sta PPUCTRL
     lda pending_ppu_mask
+	and #%01011110
+	sta pending_ppu_mask
     sta PPUMASK
 
 	dec need_nmi

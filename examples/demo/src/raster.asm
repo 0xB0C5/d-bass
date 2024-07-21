@@ -30,6 +30,8 @@ OffsetsY:
 	.byte 19, 48+19, 96+19, 144+19
 
 SR_InitRasterFX:
+.if DBASS_USER_IRQ_COUNT
+
 	lda #0
 	tax
 @Loop:
@@ -37,16 +39,15 @@ SR_InitRasterFX:
 	clc
 	adc #13
 	inx
-	cpx #MAX_USER_IRQ_COUNT
+	cpx #DBASS_USER_IRQ_COUNT
 	bne @Loop
+.endif
 	rts
 
 SR_UpdateRasterFX:
-	lda pending_ppu_mask
-	and #%01011110
-	sta pending_ppu_mask
+.if DBASS_USER_IRQ_COUNT
 
-	ldx #MAX_USER_IRQ_COUNT-1
+	ldx #DBASS_USER_IRQ_COUNT-1
 	
 @Loop:
 
@@ -72,6 +73,7 @@ SR_UpdateRasterFX:
 	
 	dex
 	bpl @Loop
+.endif
 
 	rts
 

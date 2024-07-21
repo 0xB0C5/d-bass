@@ -1,2 +1,0 @@
-MAX_USER_IRQ_COUNT = 4
-
