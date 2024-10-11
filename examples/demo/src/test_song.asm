@@ -57,6 +57,8 @@ NotePitches:     .byte 15, 0,15,15,27, 0, 0,15, 0,15,15, 0,27, 0,15, 0,18, 0,18,
 TEST_SONG_LENGTH = NotePitches - NoteInstruments
 
 SR_UpdateTestSong:
+.if DBASS_AUDIO_ENABLED
+
 	dec song_counter
 	bpl @EndSongUpdate
 
@@ -107,6 +109,6 @@ SR_UpdateTestSong:
 	sta dbass_period+1
 
 	inc song_pitch_idx
-
+.endif
 	rts
 

@@ -10,15 +10,17 @@
 
 .segment DBASS_ZP_SEGMENT
 
-dbass_period: .res 2
-dbass_volume: .res 1
+.if DBASS_AUDIO_ENABLED
+	dbass_period: .res 2
+	dbass_volume: .res 1
 
-wave_counter_lo: .res 1
-wave_counter_hi: .res 1
+	wave_counter_lo: .res 1
+	wave_counter_hi: .res 1
 
-wave_durations: .res 2
+	wave_durations: .res 2
 
-wave_sample: .res 1
+	wave_sample: .res 1
+.endif
 
 user_irq_counter: .res 1
 user_irq_index: .res 1
@@ -48,8 +50,11 @@ user_irq_counters: .res DBASS_USER_IRQ_COUNT
 
 samples:
 	.byte $00
-.align 64
-	.byte $ff
+
+.if DBASS_AUDIO_ENABLED
+	.align 64
+		.byte $ff
+.endif
 
 sample0 = <((samples - $c000) / 64)
 
@@ -57,13 +62,17 @@ sample0 = <((samples - $c000) / 64)
 
 ; Align to a page:
 ; - to ensure branches don't take an extra cycle.
-; - to make stack manipulation done in NMI easier.
+; - to make stack manipulation done in NMI simpler.
 .align 256
 
 dbass_irq_handler:
 	sta irq_temp
 
+.if DBASS_AUDIO_ENABLED
 	lda wave_sample
+.else
+	lda #sample0
+.endif
 	sta $4012
 
 	lda #$1f
@@ -72,6 +81,8 @@ dbass_irq_handler:
 	dec user_irq_counter
 	beq run_user_irq
 irq_continue:
+
+.if DBASS_AUDIO_ENABLED
 	dec wave_counter_hi
 
 	beq :+
@@ -107,6 +118,8 @@ irq_continue:
 	lda #0
 	adc wave_durations+0
 	sta wave_counter_hi
+
+.endif
 
 	lda irq_temp
 	rti
@@ -147,9 +160,11 @@ dbass_start:
 	sta user_irq_counter
 	sta expected_nmi_user_irq_counter
 
+.if DBASS_AUDIO_ENABLED
 	; Ensure audio update will run on first IRQ.
 	lda #1
 	stx wave_counter_hi
+.endif
 
 	; Sample length = 1 byte.
 	lda #0
@@ -365,6 +380,7 @@ dbass_nmi_handler:
 	jsr DBASS_USER_FIXED_UPDATE
 .endif
 
+.if DBASS_AUDIO_ENABLED
 	; Update audio
 	sei
 
@@ -375,7 +391,7 @@ dbass_nmi_handler:
 	lda #sample0
 	sta wave_sample
 	; TODO : a more forgiving way of doing this?
-	lda #60 ; Give a little extra time of silence in case this subroutine isn't called at the same time each frame.
+	lda #60 ; Give a little extra time of silence in case this isn't run at the same time each frame.
 	sta wave_counter_hi
 	jmp @end_nmi_update
 :
@@ -397,6 +413,7 @@ dbass_nmi_handler:
 
 @end_nmi_update:
 	cli
+.endif
 
 	pla
 	tay

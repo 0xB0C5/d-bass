@@ -1,15 +1,3 @@
-
-.global dbass_irq_handler
-.global dbass_nmi_handler
-.global dbass_start
-.global dbass_stop
-
-.global dbass_user_times_irqs
-.global dbass_user_times_ticks
-
-.globalzp dbass_period
-.globalzp dbass_volume
-
 ; ###################
 ; # D-Bass Settings #
 ; ###################
@@ -40,3 +28,20 @@
 
 ; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
+
+; ##################
+; # D-Bass Globals #
+; ##################
+
+.global dbass_irq_handler
+.global dbass_nmi_handler
+.global dbass_start
+.global dbass_stop
+
+.global dbass_user_times_irqs
+.global dbass_user_times_ticks
+
+.if DBASS_AUDIO_ENABLED
+    .globalzp dbass_period
+    .globalzp dbass_volume
+.endif
