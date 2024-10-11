@@ -22,14 +22,16 @@
 	wave_sample: .res 1
 .endif
 
-user_irq_counter: .res 1
-user_irq_index: .res 1
+.if DBASS_USER_IRQS_ENABLED
+	user_irq_index: .res 1
+	user_irq_counter: .res 1
 
-sync_ticks: .res 1
-sync_ticks_lo: .res 1
+	sync_ticks: .res 1
+	sync_ticks_lo: .res 1
 
-expected_nmi_user_irq_counter: .res 1
-nmi_user_irq_counter: .res 1
+	expected_nmi_user_irq_counter: .res 1
+	nmi_user_irq_counter: .res 1
+.endif
 
 nmi_temp: .res 2
 
@@ -37,12 +39,16 @@ irq_temp: .res 1
 
 .segment DBASS_BSS_SEGMENT
 
-dbass_user_times_irqs: .res DBASS_USER_IRQ_COUNT
-dbass_user_times_ticks: .res DBASS_USER_IRQ_COUNT
+.if DBASS_USER_IRQS_ENABLED
+	.assert DBASS_USER_IRQ_COUNT > 0, error, "DBASS_USER_IRQ_COUNT must be greater than 0 when user IRQs are enabled."
 
-user_syncs_ticks: .res DBASS_USER_IRQ_COUNT
+	dbass_user_times_irqs: .res DBASS_USER_IRQ_COUNT
+	dbass_user_times_ticks: .res DBASS_USER_IRQ_COUNT
 
-user_irq_counters: .res DBASS_USER_IRQ_COUNT
+	user_syncs_ticks: .res DBASS_USER_IRQ_COUNT
+
+	user_irq_counters: .res DBASS_USER_IRQ_COUNT
+.endif
 
 .segment DBASS_SAMPLES_SEGMENT
 
@@ -78,9 +84,12 @@ dbass_irq_handler:
 	lda #$1f
 	sta $4015
 
+.if DBASS_USER_IRQS_ENABLED
 	dec user_irq_counter
+
 	beq run_user_irq
 irq_continue:
+.endif
 
 .if DBASS_AUDIO_ENABLED
 	dec wave_counter_hi
@@ -126,6 +135,7 @@ irq_continue:
 
 dbass_irq_handler_end:
 
+.if DBASS_USER_IRQS_ENABLED
 run_user_irq:
 	txa
 	pha
@@ -153,12 +163,15 @@ run_user_irq:
 	inc user_irq_index
 
 	jmp irq_continue
+.endif
 
 dbass_start:
+.if DBASS_USER_IRQS_ENABLED
 	; Ensure user IRQs won't run until after dmc_update is called.
 	lda #0
 	sta user_irq_counter
 	sta expected_nmi_user_irq_counter
+.endif
 
 .if DBASS_AUDIO_ENABLED
 	; Ensure audio update will run on first IRQ.
@@ -189,6 +202,7 @@ dbass_start:
     bit $2002
     bpl @wait_vblank
 
+.if DBASS_USER_IRQS_ENABLED
 	; Zero user_irq_counter and wait for it to be decremented,
 	; decrementing x every 8 cycles.
 	ldx #0
@@ -215,6 +229,7 @@ dbass_start:
 
 	lda #0
 	sta sync_ticks_lo
+.endif
 
 	rts
 
@@ -231,8 +246,11 @@ dbass_stop:
 
 dbass_nmi_handler:
 	sta nmi_temp
+
+.if DBASS_USER_IRQS_ENABLED
 	lda user_irq_counter
 	sta nmi_user_irq_counter
+.endif
 
 	stx nmi_temp+1
 	; check if we're in an IRQ.
@@ -279,13 +297,9 @@ dbass_nmi_handler:
 	tya
 	pha
 	jsr DBASS_USER_NMI_HANDLER
-	
-.if DBASS_USER_IRQ_COUNT = 0
-	; Prevent user IRQs from triggering (they trigger when user_irq_counter decrements to 0)
-	lda #0
-	sta user_irq_counter
-.else
+
 	; Update user IRQs.
+.if DBASS_USER_IRQS_ENABLED
 	lda #0
 	sta user_irq_index
 

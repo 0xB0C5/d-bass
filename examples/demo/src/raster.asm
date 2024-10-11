@@ -30,7 +30,7 @@ OffsetsY:
 	.byte 19, 48+19, 96+19, 144+19
 
 SR_InitRasterFX:
-.if DBASS_USER_IRQ_COUNT
+.if DBASS_USER_IRQS_ENABLED
 
 	lda #0
 	tax
@@ -45,7 +45,7 @@ SR_InitRasterFX:
 	rts
 
 SR_UpdateRasterFX:
-.if DBASS_USER_IRQ_COUNT
+.if DBASS_USER_IRQS_ENABLED
 
 	ldx #DBASS_USER_IRQ_COUNT-1
 	

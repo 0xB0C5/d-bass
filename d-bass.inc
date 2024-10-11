@@ -41,8 +41,10 @@
 .global dbass_start
 .global dbass_stop
 
-.global dbass_user_times_irqs
-.global dbass_user_times_ticks
+.if DBASS_USER_IRQS_ENABLED
+    .global dbass_user_times_irqs
+    .global dbass_user_times_ticks
+.endif
 
 .if DBASS_AUDIO_ENABLED
     .globalzp dbass_period
