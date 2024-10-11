@@ -5,6 +5,9 @@
 ; Whether D-Bass should play audio. 0 to disable.
 .define DBASS_AUDIO_ENABLED 1
 
+; Whether D-Bass should generate user IRQs for raster effects. 0 to disable.
+.define DBASS_USER_IRQS_ENABLED 1
+
 ; Segment for D-Bass zeropage variables.
 .define DBASS_ZP_SEGMENT "ZEROPAGE"
 
