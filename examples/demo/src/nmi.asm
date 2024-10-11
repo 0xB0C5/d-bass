@@ -1,4 +1,5 @@
 
+.export user_nmi_handler
 .proc user_nmi_handler
 	lda #>sprites
 	sta $4014
@@ -49,7 +50,6 @@
 	jmp SR_UpdateTestSong
 	; rts
 .endproc
-.export user_nmi_handler
 
 SR_AdvanceFrame:
 	; Tell the NMI handler to run an update.
@@ -75,34 +75,9 @@ SR_AdvanceFrame:
 
 
 SR_EnablePPU:
-; wait for vblank
-@WaitVBlank:
-    bit PPUSTATUS
-    bpl @WaitVBlank
-
-	lda #>sprites
-	sta OAMDMA
-
     lda ppu_pending_control
 	ora #$80
     sta PPUCTRL
 	sta ppu_pending_control
-
-    lda pending_ppu_mask
-    sta PPUMASK
-
-	rts
-
-
-SR_DisablePPU:
-	lda #1
-	sta need_nmi
-@WaitForVBlank:
-	lda need_nmi
-	bne @WaitForVBlank
-
-	lda #$00
-	sta PPUCTRL
-	sta PPUMASK
 
 	rts

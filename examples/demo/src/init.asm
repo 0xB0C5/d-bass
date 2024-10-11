@@ -127,10 +127,10 @@ ClearMem:
 	
 	jsr SR_InitSprites
 	jsr SR_InitRasterFX
-	
-	jsr SR_EnablePPU
 
 	jsr dbass_start
+
+	jsr SR_EnablePPU
 
 @Forever:
 	jsr SR_UpdateRasterFX

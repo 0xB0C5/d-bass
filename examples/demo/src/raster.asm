@@ -78,6 +78,7 @@ SR_UpdateRasterFX:
 	rts
 
 
+.export user_irq_handler
 .proc user_irq_handler
 	lda pending_ppu_mask
 	eor #%00100001
@@ -85,4 +86,3 @@ SR_UpdateRasterFX:
 	sta pending_ppu_mask
 	rts
 .endproc
-.export user_irq_handler

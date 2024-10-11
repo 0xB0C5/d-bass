@@ -13,7 +13,6 @@
 
 .include "../../../d-bass.inc"
 
-.include "constants.asm"
 .include "addresses.asm"
 .include "nes_addresses.asm"
 

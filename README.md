@@ -15,8 +15,6 @@ Use the cc65 toolset.
 
 Place `d-bass.asm` and `d-bass.inc` in your source directory.
 
-Edit `d-bass.inc` to configure its settings.
-
 Include `d-bass.inc` in code files that need to interface with the library.
 
 Modify your build process to build and link D-Bass:
@@ -34,18 +32,10 @@ Modify your vectors to use d-bass's IRQ and NMI handlers:
 	.word dbass_irq_handler
 ```
 
-Create and export a custom IRQ handler for your raster effects:
-```
-.proc user_irq_handler
-	[your code here]
-	rts
-.endproc
-.export user_irq_handler
-```
-
 Create and export a custom NMI handler (or replace your existing one). Note that you don't need to preserve registers like you would for a raw NMI handler.
 ```
-.proc user_nmi_handler
+.export my_nmi_handler
+.proc my_nmi_handler
 	lda #$02
 	sta $4014
 	[more VBlank code]
@@ -53,9 +43,20 @@ Create and export a custom NMI handler (or replace your existing one). Note that
 .endproc
 ```
 
-After you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass.
+Create and export a custom IRQ handler for your raster effects. (This also doesn't need to preserve registers.)
+```
+.export my_irq_handler
+.proc my_irq_handler
+	[your code here]
+	rts
+.endproc
+```
 
-Before you disable NMIs, call `jsr dbass_stop` to stop D-Bass. Note: this hasn't been tested.
+Before you enable NMIs, call `jsr dbass_start` to initialize and start D-Bass. `dbass_start` will return during a VBlank. Your code must then enable NMIs before the next VBlank (via $2000/PPUCTRL). User IRQs will be enabled after the first NMI.
+
+Before you disable NMIs, call `jsr dbass_stop` to stop D-Bass. Note: this hasn't been tested. TODO : test dbass_stop.
+
+Edit `d-bass.inc` to configure its settings.
 
 Silencing Other Channels
 ------------------------
@@ -89,30 +90,27 @@ One IRQ is 576 CPU cycles. One tick is 8 CPU cycles. There are 72 ticks per IRQ.
 Your code should write these values to the tables `dbass_user_times_irqs` and `dbass_user_times_ticks` respectively.
 Each table is 1 byte per user IRQ (`DBASS_USER_IRQ_COUNT` bytes).
 
-Changes to these tables will take effect after your NMI handler returns.
+Changes to these tables will take effect after your NMI handler returns, so updates to them should go in your NMI handler.
 
 The times must be ordered earliest to latest, and each time must be at least 2 DMC IRQs after the previous.
 
 Your IRQ handler will be called with `y` set to the index of the user IRQ (i.e. the first time in a frame it is 0, then 1, etc).
 
-Your IRQ handler does NOT need to preserve any registers.
-
 Your IRQ handler must return within about 500 CPU cycles.
 
-The first time for your IRQ handler must be later than when your NMI handler returns,
-by an amount of time that depends on the number of user IRQs.
+There needs to be sufficient time from when your NMI handler returns to the first user IRQ.
+The exact amount depends on the number of user IRQs.
 1000 CPU cycles between NMI handler return and first user IRQ is probably fine.
+TODO : compute and document exact amount of time needed.
 
-Currently, D-Bass takes some time to measure the synchronization between NMI and IRQ.
-This means your custom IRQs will be called at slightly the wrong times for the first up to 36 frames.
+If you want to run code unconditionally every frame that might take too long for the above requirement (for example, to update audio at a consistent rate), you can create and export a fixed update function and set `DBASS_USER_FIXED_UPDATE` in `d-bass.inc`. Updates to user IRQ time tables can also go here, but will only take effect the frame after.
 
 Feature Roadmap
 ===============
 
-- Better way to enable/disable that plays more nicely with enabling/disabling PPU NMIs.
-- Add a way to measure sync directly rather than relying entirely on dynamic corrections.
 - Faster no-audio mode for projects that only need IRQs.
 - Faster no-IRQ mode for projects that only need audio.
+- Macros for calculating user IRQ times.
 - Support dynamic user IRQ count.
 - Support faster coarsely-timed user IRQs.
 - Support IRQ-driven DMA-conflict-free controller reading.

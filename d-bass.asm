@@ -5,7 +5,7 @@
 .import DBASS_USER_NMI_HANDLER
 
 .ifdef DBASS_USER_FIXED_UPDATE
-.import DBASS_USER_FIXED_UPDATE
+	.import DBASS_USER_FIXED_UPDATE
 .endif
 
 .segment DBASS_ZP_SEGMENT
@@ -55,6 +55,9 @@ sample0 = <((samples - $c000) / 64)
 
 .segment DBASS_CODE_SEGMENT
 
+; Align to a page:
+; - to ensure branches don't take an extra cycle.
+; - to make stack manipulation done in NMI easier.
 .align 256
 
 dbass_irq_handler:
@@ -141,7 +144,8 @@ run_user_irq:
 dbass_start:
 	; Ensure user IRQs won't run until after dmc_update is called.
 	lda #0
-	sta user_irq_counter 
+	sta user_irq_counter
+	sta expected_nmi_user_irq_counter
 
 	; Ensure audio update will run on first IRQ.
 	lda #1
@@ -155,6 +159,8 @@ dbass_start:
 	lda #sample0
 	sta $4012
 
+	cli
+
 	; Generate IRQs at rate $e.
 	lda #$8e
 	sta $4010
@@ -163,7 +169,37 @@ dbass_start:
 	lda #$1f
 	sta $4015
 
-	cli
+	; wait for vblank
+@wait_vblank:
+    bit $2002
+    bpl @wait_vblank
+
+	; Zero user_irq_counter and wait for it to be decremented,
+	; decrementing x every 8 cycles.
+	ldx #0
+	stx user_irq_counter
+@wait_irq:
+	dex                   ; 2
+	bit user_irq_counter  ; 3
+	bpl @wait_irq         ; 3
+
+	; x is now the negative time from NMI to an IRQ, in 8-cycle ticks.
+	; In theory, we should add 72 to convert to positive time from IRQ to NMI,
+	; and add 50 to get the sync for the *next* frame.
+	; In practice, it seems timing differences mean we add 72 + 46.
+	; I'm not entirely sure what those differences are, but it seems to work well enough.
+	txa
+	clc
+	adc #72+46
+	; Wrap around to 0 if at least 72.
+	cmp #72
+	bcc :+
+	sbc #72
+:
+	sta sync_ticks
+
+	lda #0
+	sta sync_ticks_lo
 
 	rts
 
@@ -194,6 +230,8 @@ dbass_nmi_handler:
 	bcs @no_irq
 
 	; There's an IRQ happening.
+	; We need to enable IRQs during NMI or else audio will cut out and user IRQs will desync.
+	; But we can't enable IRQs if there's already an IRQ happening, since it can double trigger.
 	; Sneak in a new return address onto the stack for the IRQ handler.
 	; stack: (sp) [flags] [<return] [>return]
 	lda $103, x
@@ -221,6 +259,7 @@ dbass_nmi_handler:
 	stx nmi_temp+1
 
 @no_irq:
+	; Now that an IRQ is not happening, we can safely allow more IRQs to be triggered.
 	cli
 	tya
 	pha
@@ -236,8 +275,10 @@ dbass_nmi_handler:
 	sta user_irq_index
 
 	; Update sync based on expected_nmi_user_irq_counter
-	lda nmi_user_irq_counter
-	cmp expected_nmi_user_irq_counter
+	lda expected_nmi_user_irq_counter
+	; expected_nmi_user_irq_counter being set to 0 means it wasn't computed, and we shouldn't reset the sync.
+	beq @end_sync_reset
+	cmp nmi_user_irq_counter
 	beq @end_sync_reset
 
 	lda #0
