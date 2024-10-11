@@ -108,8 +108,6 @@ If you want to run code unconditionally every frame that might take too long for
 Feature Roadmap
 ===============
 
-- Faster no-audio mode for projects that only need IRQs.
-- Faster no-IRQ mode for projects that only need audio.
 - Macros for calculating user IRQ times.
 - Support dynamic user IRQ count.
 - Support faster coarsely-timed user IRQs.
