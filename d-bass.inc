@@ -14,6 +14,9 @@
 ; # D-Bass Settings #
 ; ###################
 
+; Whether D-Bass should play audio. 0 to disable.
+.define DBASS_AUDIO_ENABLED 1
+
 ; Segment for D-Bass zeropage variables.
 .define DBASS_ZP_SEGMENT "ZEROPAGE"
 
