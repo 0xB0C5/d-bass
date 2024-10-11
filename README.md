@@ -96,7 +96,7 @@ The times must be ordered earliest to latest, and each time must be at least 2 D
 
 Your IRQ handler will be called with `y` set to the index of the user IRQ (i.e. the first time in a frame it is 0, then 1, etc).
 
-Your IRQ handler must return within about 500 CPU cycles.
+Your IRQ handler must return within about 500 CPU cycles. TODO : determine exact number of cycles.
 
 There needs to be sufficient time from when your NMI handler returns to the first user IRQ.
 The exact amount depends on the number of user IRQs.
