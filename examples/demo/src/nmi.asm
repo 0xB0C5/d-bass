@@ -45,10 +45,13 @@
 	dec need_nmi
 
 @end:
-	; Update song before returning,
-	; because D-Bass update applies after we return.
-	jmp SR_UpdateTestSong
-	; rts
+	; Update raster effects before returning,
+	; so they apply this frame.
+	jsr SR_UpdateRasterFX
+
+	; Same with updating song.
+	; Note: this could go in a fixed update function instead (see DBASS_USER_FIXED_UPDATE).
+	jmp SR_UpdateTestSong ; Tail call
 .endproc
 
 SR_AdvanceFrame:

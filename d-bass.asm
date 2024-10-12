@@ -23,6 +23,10 @@
 .endif
 
 .if DBASS_USER_IRQS_ENABLED
+	dbass_user_irq_count: .res 1
+
+	active_user_irq_count: .res 1
+
 	user_irq_index: .res 1
 	user_irq_counter: .res 1
 
@@ -40,8 +44,6 @@ irq_temp: .res 1
 .segment DBASS_BSS_SEGMENT
 
 .if DBASS_USER_IRQS_ENABLED
-	.assert DBASS_USER_IRQ_COUNT > 0, error, "DBASS_USER_IRQ_COUNT must be greater than 0 when user IRQs are enabled."
-
 	dbass_user_times_irqs: .res DBASS_USER_IRQ_COUNT
 	dbass_user_times_ticks: .res DBASS_USER_IRQ_COUNT
 
@@ -320,7 +322,23 @@ dbass_nmi_handler:
 
 	; Compute user times with sync.
 	; Store in user_irq_counters.
-	ldx #DBASS_USER_IRQ_COUNT-1
+	ldx dbass_user_irq_count
+	stx active_user_irq_count
+	bne @nonzero_user_irq_count
+
+	; No user IRQs are enabled.
+	lda #256-51
+	sta expected_nmi_user_irq_counter
+
+	lda user_irq_counter
+	sec
+	sbc nmi_user_irq_counter
+	sta user_irq_counter
+
+	jmp @end_update_counters
+
+@nonzero_user_irq_count:
+	dex
 @user_time_loop:
 	lda dbass_user_times_ticks, x
 	clc
@@ -339,7 +357,8 @@ dbass_nmi_handler:
 
 	; Compute expected_nmi_user_irq_counter:
 	;   expected_nmi_user_irq_counter = user_irq_counters[-1] - frame_time_irqs
-	lda user_irq_counters+DBASS_USER_IRQ_COUNT-1
+	ldx active_user_irq_count
+	lda user_irq_counters-1, x
 	sec
 	sbc #51 ; Whole IRQs per frame
 	sta expected_nmi_user_irq_counter
@@ -365,12 +384,14 @@ dbass_nmi_handler:
 	sta user_irq_counters, x
 
 	inx
-	cpx #DBASS_USER_IRQ_COUNT
+	cpx active_user_irq_count
 	bne @user_irq_counters_loop
 
 	lda #0
-	sta user_irq_counters+DBASS_USER_IRQ_COUNT-1
+	; x is active_user_irq_count.
+	sta user_irq_counters-1, x
 
+@end_update_counters:
 	cli
 
 	; Update sync to next frame.

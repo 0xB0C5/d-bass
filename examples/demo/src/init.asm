@@ -133,7 +133,6 @@ ClearMem:
 	jsr SR_EnablePPU
 
 @Forever:
-	jsr SR_UpdateRasterFX
 	jsr SR_UpdateSprites
 
 	ldx #0

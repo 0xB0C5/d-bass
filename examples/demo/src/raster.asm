@@ -4,8 +4,10 @@ TICKS_PER_IRQ = 72
 
 LINE_COUNT = 224
 
-; TODO : make this actually match the start line!
 START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 800)
+
+; Set to 1 to cycle between different numbers of raster effects.
+DYNAMIC_FX_COUNT = 0
 
 LineIrqs:
 .repeat LINE_COUNT, I
@@ -31,6 +33,9 @@ OffsetsY:
 
 SR_InitRasterFX:
 .if DBASS_USER_IRQS_ENABLED
+
+	lda #4
+	sta dbass_user_irq_count
 
 	lda #0
 	tax
@@ -73,6 +78,19 @@ SR_UpdateRasterFX:
 	
 	dex
 	bpl @Loop
+
+	.if DYNAMIC_FX_COUNT
+		lda raster_wave_indices+0
+		bne @end
+
+		; Update number of IRQs.
+		dec dbass_user_irq_count
+		bpl @end
+		lda #4
+		sta dbass_user_irq_count
+	@end:
+	.endif
+
 .endif
 
 	rts

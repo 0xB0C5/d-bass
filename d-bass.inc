@@ -42,6 +42,7 @@
 .global dbass_stop
 
 .if DBASS_USER_IRQS_ENABLED
+    .globalzp dbass_user_irq_count
     .global dbass_user_times_irqs
     .global dbass_user_times_ticks
 .endif

@@ -82,7 +82,9 @@ If the volume would cause the wave to rise for more than half the period, it ins
 
 Custom User IRQs
 ----------------
-The setting `DBASS_USER_IRQ_COUNT` determines how many times your custom IRQ handler will be called per frame.
+The setting `DBASS_USER_IRQ_COUNT` determines the maximum number of times your custom IRQ handler will be called per frame.
+
+The variable `dbass_user_irq_count` determines the actual number of times it is called.
 
 The times at which your IRQ handler will be called are measured in DMC IRQs and "ticks".
 One IRQ is 576 CPU cycles. One tick is 8 CPU cycles. There are 72 ticks per IRQ.
@@ -90,7 +92,7 @@ One IRQ is 576 CPU cycles. One tick is 8 CPU cycles. There are 72 ticks per IRQ.
 Your code should write these values to the tables `dbass_user_times_irqs` and `dbass_user_times_ticks` respectively.
 Each table is 1 byte per user IRQ (`DBASS_USER_IRQ_COUNT` bytes).
 
-Changes to these tables will take effect after your NMI handler returns, so updates to them should go in your NMI handler.
+Changes to these tables, as well as to `dbass_user_irq_count`, will take effect after your NMI handler returns, so updates to them should go in your NMI handler.
 
 The times must be ordered earliest to latest, and each time must be at least 2 DMC IRQs after the previous.
 
@@ -109,7 +111,6 @@ Feature Roadmap
 ===============
 
 - Macros for calculating user IRQ times.
-- Support dynamic user IRQ count.
 - Support faster coarsely-timed user IRQs.
 - Support IRQ-driven DMA-conflict-free controller reading.
 - HQ audio mode for higher pitches at the expense of CPU.
