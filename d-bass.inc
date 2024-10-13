@@ -27,7 +27,8 @@
 .define DBASS_USER_IRQ_HANDLER user_irq_handler
 
 ; Optional, a subroutine to run once per frame after the NMI handler.
-; .define DBASS_USER_FIXED_UPDATE fixed_update
+.define DBASS_USER_FIXED_UPDATE_ENABLED 0
+;.define DBASS_USER_FIXED_UPDATE fixed_update
 
 ; The number of times per frame your custom IRQ handler will be called.
 .define DBASS_USER_IRQ_COUNT 4
@@ -51,3 +52,24 @@
     .globalzp dbass_period
     .globalzp dbass_volume
 .endif
+
+
+; ##################
+; # D-Bass Helpers #
+; ##################
+
+; The number of 256ths of a tick, from when D-Bass measures the NMI, to the hblank of the first scanline.
+.define DBASS_LINE0_SUBTICKS 74750
+; The number of 256ths of a tick per scanline.
+.define DBASS_SUBTICKS_PER_LINE 3637
+
+; These 2 macros compute the time for a raster effect to apply during the h-blank before a scanline.
+;     line_number: The scanline number, from 0 to 239.
+;     cpu_cycles: The number of cpu cycles the user IRQ takes to apply the effect.
+; Example: set user IRQ 1, which takes 10 cpu cycles, to apply on scanline 100:
+;     lda #dbass_hblank_irqs 100, 10
+;     sta dbass_user_times_irqs + 1
+;     lda #dbass_hblank_ticks 100, 10
+;     sta dbass_user_times_ticks + 1
+.define dbass_hblank_irqs (line_number, cpu_cycles) (((DBASS_LINE0_SUBTICKS + DBASS_SUBTICKS_PER_LINE*line_number - 32*cpu_cycles) / 256) / 72)
+.define dbass_hblank_ticks (line_number, cpu_cycles) (((DBASS_LINE0_SUBTICKS + DBASS_SUBTICKS_PER_LINE*line_number - 32*cpu_cycles) / 256) .mod 72)

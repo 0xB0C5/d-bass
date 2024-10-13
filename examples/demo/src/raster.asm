@@ -1,24 +1,18 @@
 
-SUBTICKS_PER_LINE = 3637
-TICKS_PER_IRQ = 72
-
 LINE_COUNT = 224
-
-START_LINE_SUBTICKS = (4 * TICKS_PER_IRQ * 256 + 800)
 
 ; Set to 1 to cycle between different numbers of raster effects.
 DYNAMIC_FX_COUNT = 0
 
 LineIrqs:
 .repeat LINE_COUNT, I
-	.byte ((START_LINE_SUBTICKS + I*SUBTICKS_PER_LINE) / 256) / TICKS_PER_IRQ
+	.byte dbass_hblank_irqs I, 9
 .endrepeat
 
 LineTicks:
 .repeat LINE_COUNT, I
-	.byte ((START_LINE_SUBTICKS + I*SUBTICKS_PER_LINE) / 256) .MOD TICKS_PER_IRQ
+	.byte dbass_hblank_ticks I, 9
 .endrepeat
-
 
 Wave:
 	.byte 11, 12, 13, 14, 14, 15, 16, 16, 17, 17, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21
@@ -98,9 +92,9 @@ SR_UpdateRasterFX:
 
 .export user_irq_handler
 .proc user_irq_handler
-	lda pending_ppu_mask
-	eor #%00100001
-	sta PPUMASK
+	lda pending_ppu_mask ; 3  3
+	eor #%00100001       ; 2  5
+	sta PPUMASK          ; 4  9
 	sta pending_ppu_mask
 	rts
 .endproc

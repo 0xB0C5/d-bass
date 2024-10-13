@@ -4,7 +4,7 @@
 .import DBASS_USER_IRQ_HANDLER
 .import DBASS_USER_NMI_HANDLER
 
-.ifdef DBASS_USER_FIXED_UPDATE
+.if DBASS_USER_FIXED_UPDATE_ENABLED
 	.import DBASS_USER_FIXED_UPDATE
 .endif
 
@@ -411,7 +411,7 @@ dbass_nmi_handler:
 	sta sync_ticks
 .endif
 
-.ifdef DBASS_USER_FIXED_UPDATE
+.if DBASS_USER_FIXED_UPDATE_ENABLED
 	jsr DBASS_USER_FIXED_UPDATE
 .endif
 
