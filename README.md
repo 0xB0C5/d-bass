@@ -98,6 +98,11 @@ The times must be ordered earliest to latest, and each time must be at least 2 D
 
 Your IRQ handler will be called with `y` set to the index of the user IRQ (i.e. the first time in a frame it is 0, then 1, etc).
 
+If you just want your raster effects to happen on a particular scanline, check out the macros `dbass_hblank_irqs` and `dbass_hblank_ticks` in `d-bass.inc`.
+
+CPU Time Requirements
+=====================
+
 Your IRQ handler must return within about 500 CPU cycles. TODO : determine exact number of cycles.
 
 There needs to be sufficient time from when your NMI handler returns to the first user IRQ.
@@ -110,7 +115,6 @@ If you want to run code unconditionally every frame that might take too long for
 Feature Roadmap
 ===============
 
-- Macros for calculating user IRQ times.
 - Support faster coarsely-timed user IRQs.
 - Support IRQ-driven DMA-conflict-free controller reading.
 - HQ audio mode for higher pitches at the expense of CPU.
