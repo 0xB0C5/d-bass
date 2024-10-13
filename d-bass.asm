@@ -341,6 +341,15 @@ dbass_nmi_handler:
 	dex
 @user_time_loop:
 	lda dbass_user_times_ticks, x
+	bpl @compute_precise_time
+
+	; Negative ticks indicates this is a coarse time which ignores sync.
+	lda #0
+	sta user_syncs_ticks, x
+	lda dbass_user_times_irqs, x
+	jmp @set_user_irq_counter
+
+@compute_precise_time:
 	clc
 	adc sync_ticks
 	cmp #72
@@ -351,6 +360,8 @@ dbass_nmi_handler:
 
 	lda dbass_user_times_irqs, x
 	adc #0
+
+@set_user_irq_counter:
 	sta user_irq_counters, x
 	dex
 	bpl @user_time_loop

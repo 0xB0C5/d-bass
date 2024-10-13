@@ -92,6 +92,8 @@ One IRQ is 576 CPU cycles. One tick is 8 CPU cycles. There are 72 ticks per IRQ.
 Your code should write these values to the tables `dbass_user_times_irqs` and `dbass_user_times_ticks` respectively.
 Each table is 1 byte per user IRQ (`DBASS_USER_IRQ_COUNT` bytes).
 
+If you only need coarse timing for one of your IRQs, you can set the ticks for that IRQ to be negative. D-Bass will skip its delay loop used for precise timing, saving between 0 and 576 cpu cycles per user IRQ.
+
 Changes to these tables, as well as to `dbass_user_irq_count`, will take effect after your NMI handler returns, so updates to them should go in your NMI handler.
 
 The times must be ordered earliest to latest, and each time must be at least 2 DMC IRQs after the previous.
@@ -115,7 +117,5 @@ If you want to run code unconditionally every frame that might take too long for
 Feature Roadmap
 ===============
 
-- Support faster coarsely-timed user IRQs.
-- Support IRQ-driven DMA-conflict-free controller reading.
 - HQ audio mode for higher pitches at the expense of CPU.
 - Support other waveforms: M-shaped waves and/or fixed-pattern waves.
