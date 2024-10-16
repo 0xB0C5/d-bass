@@ -117,5 +117,4 @@ If you want to run code unconditionally every frame that might take too long for
 Feature Roadmap
 ===============
 
-- HQ audio mode for higher pitches at the expense of CPU.
 - Support other waveforms: M-shaped waves and/or fixed-pattern waves.
