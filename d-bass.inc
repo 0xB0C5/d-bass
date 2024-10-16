@@ -5,6 +5,9 @@
 ; Whether D-Bass should play audio. 0 to disable.
 .define DBASS_AUDIO_ENABLED 1
 
+; Whether D-Bass should generate higher quality waveforms at the expense of more CPU.
+.define DBASS_AUDIO_HQ 0
+
 ; Whether D-Bass should generate user IRQs for raster effects. 0 to disable.
 .define DBASS_USER_IRQS_ENABLED 1
 

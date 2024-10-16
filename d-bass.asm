@@ -54,7 +54,7 @@ irq_temp: .res 1
 
 .segment DBASS_SAMPLES_SEGMENT
 
-.align 64
+.align 128
 
 samples:
 	.byte $00
@@ -62,6 +62,12 @@ samples:
 .if DBASS_AUDIO_ENABLED
 	.align 64
 		.byte $ff
+	.if DBASS_AUDIO_HQ
+		.align 64
+			.byte $0f
+		.align 64
+			.byte $f0
+	.endif
 .endif
 
 sample0 = <((samples - $c000) / 64)
@@ -78,10 +84,20 @@ dbass_irq_handler:
 
 .if DBASS_AUDIO_ENABLED
 	lda wave_sample
-.else
-	lda #sample0
-.endif
 	sta $4012
+
+	.if DBASS_AUDIO_HQ
+		; In HQ mode, the first sample of each section of the waveform may be different to
+		; delay the change by half an IRQ.
+		; Change the sample for the next IRQ to be the non-delayed form of the same sample.
+		and #%11111101
+		sta wave_sample
+	.endif
+.else
+	; TODO : Cam we just set the sample once at startup?
+	lda #sample0
+	sta $4012
+.endif
 
 	lda #$1f
 	sta $4015
@@ -109,6 +125,13 @@ irq_continue:
 
 	; even update
 	lda #sample0 + 1
+
+.if DBASS_AUDIO_HQ
+	bit wave_counter_lo
+	bpl :+
+	ora #2 ; Use delayed sample.
+:
+.endif
 	sta wave_sample
 
 	lda wave_durations+1
@@ -119,6 +142,13 @@ irq_continue:
 
 @odd_update:
 	lda #sample0
+
+.if DBASS_AUDIO_HQ
+	bit wave_counter_lo
+	bpl :+
+	ora #2 ; Use delayed sample.
+:
+.endif
 	sta wave_sample
 
 	clc
