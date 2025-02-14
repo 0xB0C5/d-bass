@@ -247,11 +247,11 @@ dbass_start:
 	; x is now the negative time from NMI to an IRQ, in 8-cycle ticks.
 	; In theory, we should add 72 to convert to positive time from IRQ to NMI,
 	; and add 50 to get the sync for the *next* frame.
-	; In practice, it seems timing differences mean we add 72 + 46.
+	; In practice, it seems timing differences mean we add 72 + 43.
 	; I'm not entirely sure what those differences are, but it seems to work well enough.
 	txa
 	clc
-	adc #72+46
+	adc #72+43
 	; Wrap around to 0 if at least 72.
 	cmp #72
 	bcc :+
