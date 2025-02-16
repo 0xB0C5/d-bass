@@ -60,9 +60,11 @@ Edit `d-bass.inc` to configure its settings.
 
 Silencing Other Channels
 ------------------------
-D-Bass currently writes `$1f` to `$4015` every DMC IRQ. Silencing channels via `$4015` will not work.
+D-Bass writes `$1f` to `$4015` every DMC IRQ. Silencing channels via `$4015` will not work.
 
-TODO : document how to silence other channels by other means and/or support preserving `$4015`.
+- To silence the two pulse channels, write 0 to constant volume ($10 to $4000/$4004)
+- To silence the noise channel, write 0 to constant volume ($10 to $400C)
+- To silence the triangle channel, enable the linear counter with a period of 0 ($80 to $4008)
 
 Audio
 -----
@@ -112,7 +114,7 @@ The exact amount depends on the number of user IRQs.
 1000 CPU cycles between NMI handler return and first user IRQ is probably fine.
 TODO : compute and document exact amount of time needed.
 
-If you want to run code unconditionally every frame that might take too long for the above requirement (for example, to update audio at a consistent rate), you can create and export a fixed update function and set `DBASS_USER_FIXED_UPDATE` in `d-bass.inc`. Updates to user IRQ time tables can also go here, but will only take effect the frame after.
+If you want to run code unconditionally every frame that might take too long for the above requirement (for example, to update audio at a consistent rate), you can create and export a fixed update function and set `DBASS_USER_FIXED_UPDATE` in `d-bass.inc`. Updates to user IRQ time tables can also go here, but will only take effect the frame after. Updates to audio parameters will take place as soon as your code returns.
 
 Feature Roadmap
 ===============
